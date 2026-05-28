@@ -156,6 +156,28 @@ function scanMahsulotSaqlash(data, rasm) {
   // mahsulot.js dagi qrMahsulotQabul funksiyasini chaqiramiz
   const natija = qrMahsulotQabul(data, rasm);
 
+  // ✅ Telegram botga xabar — QR skan orqali
+  const tgMatn = natija.yangi
+    ? `📱 <b>QR Skan — Yangi Mahsulot!</b>\n\n` +
+      `🏷 Nomi: <b>${data.nom}</b>\n` +
+      `📂 Kategoriya: ${data.kat || '—'}\n` +
+      `${data.trek ? `🔖 Trek: <code>${data.trek}</code>\n` : ''}` +
+      `💴 Yuan narxi: ¥${Number(data.yuan || 0).toLocaleString()}\n` +
+      `💰 Sotuv narxi: ${Number(data.som || 0).toLocaleString()} so'm\n` +
+      `📦 Qo'shilgan miqdor: ${data.miqdor} dona\n` +
+      `📅 Sana: ${data.sana || today()}`
+    : `📱 <b>QR Skan — Mahsulot Yangilandi!</b>\n\n` +
+      `🏷 Nomi: <b>${natija.nom}</b>\n` +
+      `📦 Yangi jami miqdor: <b>${natija.miqdor} dona</b>\n` +
+      `➕ Qo'shildi: ${data.miqdor} dona\n` +
+      `💰 Sotuv narxi: ${Number(data.som || 0).toLocaleString()} so'm\n` +
+      `📅 Sana: ${today()}`;
+
+  // app.js dagi TG obyektini ishlatamiz
+  if (typeof TG !== 'undefined') {
+    TG.xabar(tgMatn);
+  }
+
   if (natija.yangi) {
     showToast(`✅ Yangi mahsulot qo'shildi: ${natija.nom}`);
   } else {

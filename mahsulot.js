@@ -290,7 +290,7 @@ function qrMahsulotQabul(data, rasm) {
       xitoyNarx: data.yuan || 0,
       usd: data.usd || null,
       sotuvNarx: data.som || 0,
-      kurs: data.kurs || 350,
+      kurs: data.kurs || 1820,
       miqdor: data.miqdor || 1,
       min: data.min || 5,
       izoh: data.izoh || '',

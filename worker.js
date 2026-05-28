@@ -57,10 +57,10 @@ function rasmYukla(event) {
   reader.readAsDataURL(file);
 }
 
-// ===== NARX HISOBLASH — YUAN → SO'M AVTO =====
+// ===== NARX HISOBLASH — YUAN → SO'M AVTO (1 yuan = 1820 so'm) =====
 function hisoblaSom() {
   const yuan = parseFloat(document.getElementById('w-yuan').value) || 0;
-  const kurs = parseFloat(document.getElementById('w-kurs').value) || 350;
+  const kurs = parseFloat(document.getElementById('w-kurs').value) || 1820;
 
   if (yuan > 0 && kurs > 0) {
     const tannarx = Math.round(yuan * kurs);
@@ -218,8 +218,7 @@ function qrYarat() {
     `📂 Kategoriya: ${kat}\n` +
     `🔖 Trek: <code>${qrData.trek}</code>\n` +
     `💴 Yuan narxi: ¥${parseFloat(yuan).toLocaleString()}\n` +
-    `💱 Kurs: 1¥ = ${parseFloat(kurs).toLocaleString()} so'm\n` +
-    `💸 Tannarx: ${formatMoney(tannarx)}\n` +
+    `💱 Kurs: 1¥ = ${parseFloat(kurs).toLocaleString()} so'm\n` +    `💸 Tannarx: ${formatMoney(tannarx)}\n` +
     `💰 Sotuv narxi: ${formatMoney(som)}\n` +
     `📈 Foyda: ${formatMoney(foyda)}\n` +
     `📦 Miqdor: ${miqdor} dona\n` +
@@ -387,7 +386,7 @@ function yangisi() {
   document.getElementById('w-yuan').value = '';
   document.getElementById('w-usd').value = '';
   document.getElementById('w-som').value = '';
-  document.getElementById('w-kurs').value = '350';
+  document.getElementById('w-kurs').value = '1820';
   document.getElementById('w-miqdor').value = '';
   document.getElementById('w-min').value = '';
   document.getElementById('w-izoh').value = '';

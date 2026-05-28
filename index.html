@@ -6,6 +6,8 @@
   <title>Biznes Boshqaruv | Uzum Market Texnika</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- QR Skaner kutubxona -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -35,7 +37,11 @@
         <i class="fas fa-chart-bar"></i> <span>Hisobotlar</span>
       </a>
     </nav>
-    <div class="sidebar-footer">v1.0 | Uzum Market</div>
+      <a href="worker.html" class="nav-link" target="_blank">
+        <i class="fas fa-qrcode"></i> <span>Ishchi Panel</span>
+      </a>
+    </div>
+    <div class="sidebar-footer">v2.0 | Uzum Market</div>
   </div>
 
   <!-- OVERLAY -->
@@ -47,6 +53,9 @@
       <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
       <h1 class="page-title" id="pageTitle">Bosh sahifa</h1>
       <div class="topbar-right">
+        <button class="btn btn-qr-scan" onclick="openScanner()" title="QR Skaner">
+          <i class="fas fa-qrcode"></i> QR Skan
+        </button>
         <span class="date-badge" id="currentDate"></span>
       </div>
     </header>
@@ -102,6 +111,9 @@
       <div id="page-mahsulot" class="page">
         <div class="page-actions">
           <input type="text" id="mahsulot-search" placeholder="🔍 Qidirish..." oninput="filterMahsulot()" />
+          <button class="btn btn-outline-scan" onclick="openScanner()">
+            <i class="fas fa-qrcode"></i> QR Skan
+          </button>
           <button class="btn btn-primary" onclick="openMahsulotModal()">
             <i class="fas fa-plus"></i> Yangi mahsulot
           </button>
@@ -111,9 +123,11 @@
             <thead>
               <tr>
                 <th>#</th>
+                <th>Rasm</th>
                 <th>Nomi</th>
                 <th>Kategoriya</th>
-                <th>Xitoy narxi ($)</th>
+                <th>Trek №</th>
+                <th>Xitoy narxi (¥)</th>
                 <th>Sotuv narxi (so'm)</th>
                 <th>Miqdor</th>
                 <th>Holat</th>
@@ -271,6 +285,15 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="m-id" />
+        <!-- Rasm -->
+        <div class="m-rasm-zone" id="m-rasm-zone" onclick="document.getElementById('m-rasm-input').click()">
+          <input type="file" id="m-rasm-input" accept="image/*" style="display:none" onchange="mRasmYukla(event)" />
+          <div id="m-rasm-preview-wrap">
+            <i class="fas fa-camera" style="font-size:1.5rem;color:#cbd5e1"></i>
+            <span style="font-size:0.82rem;color:#94a3b8;margin-top:4px">Rasm yuklash (ixtiyoriy)</span>
+          </div>
+          <img id="m-rasm-preview" style="display:none;max-height:100px;border-radius:8px;object-fit:contain" />
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label>Mahsulot nomi *</label>
@@ -293,19 +316,25 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Xitoy narxi ($) *</label>
-            <input type="number" id="m-xitoy-narx" placeholder="0" />
+            <label><i class="fas fa-barcode" style="color:#6c63ff"></i> Trek raqami</label>
+            <input type="text" id="m-trek" placeholder="TRK-20240001" />
           </div>
           <div class="form-group">
-            <label>Sotuv narxi (so'm) *</label>
-            <input type="number" id="m-sotuv-narx" placeholder="0" />
+            <label><i class="fas fa-yen-sign" style="color:#6c63ff"></i> Xitoy narxi (Yuan ¥)</label>
+            <input type="number" id="m-xitoy-narx" placeholder="0" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
+            <label>Sotuv narxi (so'm) *</label>
+            <input type="number" id="m-sotuv-narx" placeholder="0" />
+          </div>
+          <div class="form-group">
             <label>Miqdor (dona) *</label>
             <input type="number" id="m-miqdor" placeholder="0" />
           </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
             <label>Minimal miqdor (ogohlantirish)</label>
             <input type="number" id="m-min" placeholder="5" />
@@ -462,11 +491,100 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <!-- ===== QR SKANER MODAL ===== -->
+  <div class="modal-bg" id="scanner-modal">
+    <div class="modal modal-scanner">
+      <div class="modal-header">
+        <h3><i class="fas fa-qrcode" style="color:#6c63ff"></i> QR Kod Skanerlash</h3>
+        <button onclick="closeScanner()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="padding:1rem">
+
+        <!-- Status -->
+        <div class="scan-status" id="scan-status">
+          📷 Kamera yuklanmoqda...
+        </div>
+
+        <!-- Kamera oynasi -->
+        <div id="qr-reader" style="width:100%;border-radius:12px;overflow:hidden;margin:0.75rem 0;"></div>
+
+        <!-- Qo'lda kiritish -->
+        <div id="manual-section" style="display:none;margin-top:0.75rem">
+          <p style="font-size:0.82rem;color:#64748b;margin-bottom:0.5rem">
+            <i class="fas fa-keyboard"></i> Yoki QR ma'lumotini qo'lda kiriting:
+          </p>
+          <div style="display:flex;gap:0.5rem">
+            <input type="text" id="scan-manual-input"
+              placeholder='{"nom":"...","som":...}'
+              style="flex:1;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:8px;font-size:0.82rem" />
+            <button class="btn btn-primary btn-sm" onclick="manualScan()">Yuborish</button>
+          </div>
+        </div>
+
+        <!-- Skan natijasi -->
+        <div id="scan-result-box" style="display:none;margin-top:1rem">
+          <div class="scan-result-card">
+
+            <!-- Rasm -->
+            <div style="display:flex;gap:1rem;align-items:flex-start;margin-bottom:1rem">
+              <img id="scan-rasm" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;display:none" />
+              <div id="scan-rasmsiz" style="width:80px;height:80px;border-radius:10px;border:1px solid #e2e8f0;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:2rem;display:none">📦</div>
+              <div style="flex:1">
+                <h4 id="scan-nom" style="font-size:1rem;font-weight:700;margin-bottom:4px"></h4>
+                <span id="scan-kat" style="font-size:0.8rem;background:#e0e7ff;color:#6c63ff;padding:2px 8px;border-radius:12px"></span>
+              </div>
+            </div>
+
+            <!-- Ma'lumotlar jadvali -->
+            <div class="scan-info-grid">
+              <div class="scan-info-row">
+                <span class="scan-info-label"><i class="fas fa-barcode"></i> Trek №</span>
+                <span class="scan-info-val" id="scan-trek"></span>
+              </div>
+              <div class="scan-info-row">
+                <span class="scan-info-label"><i class="fas fa-yen-sign"></i> Yuan narxi</span>
+                <span class="scan-info-val" id="scan-yuan"></span>
+              </div>
+              <div class="scan-info-row">
+                <span class="scan-info-label"><i class="fas fa-dollar-sign"></i> USD narxi</span>
+                <span class="scan-info-val" id="scan-usd"></span>
+              </div>
+              <div class="scan-info-row highlight">
+                <span class="scan-info-label"><i class="fas fa-coins"></i> Sotuv narxi</span>
+                <span class="scan-info-val" id="scan-som"></span>
+              </div>
+              <div class="scan-info-row">
+                <span class="scan-info-label"><i class="fas fa-boxes"></i> Miqdor</span>
+                <span class="scan-info-val" id="scan-miqdor"></span>
+              </div>
+              <div class="scan-info-row">
+                <span class="scan-info-label"><i class="fas fa-calendar"></i> Sana</span>
+                <span class="scan-info-val" id="scan-sana"></span>
+              </div>
+            </div>
+
+            <!-- Tugmalar -->
+            <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap">
+              <button class="btn btn-primary" style="flex:1" id="btn-scan-saqlash">
+                <i class="fas fa-save"></i> Omborga saqlash
+              </button>
+              <button class="btn btn-secondary" id="btn-scan-qayta">
+                <i class="fas fa-redo"></i> Qayta skan
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
   <script src="mahsulot.js"></script>
   <script src="mijoz.js"></script>
   <script src="buyurtma.js"></script>
   <script src="moliya.js"></script>
   <script src="hisobot.js"></script>
+  <script src="scanner.js"></script>
 </body>
 </html>

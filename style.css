@@ -527,3 +527,180 @@ tbody tr:hover { background: #f8fafc; }
   .page-actions { flex-direction: column; }
   .page-actions input, .page-actions select { min-width: 100%; }
 }
+
+
+/* ===== QR SCAN TUGMASI (TOPBAR) ===== */
+.btn-qr-scan {
+  background: linear-gradient(135deg, #6c63ff, #574fd6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(108,99,255,0.3);
+}
+.btn-qr-scan:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(108,99,255,0.4);
+}
+
+/* ===== QR SKAN TUGMASI (MAHSULOT SAHIFASI) ===== */
+.btn-outline-scan {
+  background: white;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-outline-scan:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* ===== SCANNER MODAL ===== */
+.modal-scanner {
+  max-width: 480px;
+}
+
+.scan-status {
+  text-align: center;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background: #f1f5f9;
+  color: var(--text-light);
+}
+.scan-status.active {
+  background: #dcfce7;
+  color: var(--green);
+}
+.scan-status.success {
+  background: #dcfce7;
+  color: #15803d;
+}
+.scan-status.error {
+  background: #fee2e2;
+  color: var(--red);
+}
+
+/* ===== SCAN NATIJA ===== */
+.scan-result-card {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.scan-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+}
+
+.scan-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.scan-info-row:last-child { border-bottom: none; }
+.scan-info-row.highlight { background: #f0fdf4; }
+.scan-info-row.highlight .scan-info-val { color: var(--green); font-weight: 700; }
+
+.scan-info-label {
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.scan-info-label i { color: var(--primary); width: 14px; }
+.scan-info-val { font-weight: 600; color: var(--text); }
+
+/* ===== MAHSULOT RASM ZONE (MODAL) ===== */
+.m-rasm-zone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+  transition: border-color 0.2s;
+  gap: 4px;
+}
+.m-rasm-zone:hover { border-color: var(--primary); }
+.m-rasm-zone.has-image {
+  border-style: solid;
+  border-color: var(--primary);
+  padding: 0.5rem;
+}
+
+/* ===== MAHSULOT JADVALIDA RASM ===== */
+.mahsulot-thumb {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.mahsulot-thumb-placeholder {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+/* ===== TREK BADGE ===== */
+.trek-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-family: monospace;
+}
+
+/* ===== SIDEBAR ISHCHI PANEL LINK ===== */
+.nav-link.worker-link {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: 0.5rem;
+  color: #a5b4fc;
+}
+.nav-link.worker-link:hover {
+  color: white;
+  background: rgba(165,180,252,0.15);
+}

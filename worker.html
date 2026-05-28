@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ishchi Panel | Tovar QR Yaratish</title>
+  <link rel="stylesheet" href="worker.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- QR Code kutubxona -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <div class="worker-app">
+
+    <!-- HEADER -->
+    <header class="worker-header">
+      <div class="header-left">
+        <span class="logo">📦 Ishchi Panel</span>
+        <span class="subtitle">Tovar QR Yaratish</span>
+      </div>
+      <div class="header-right">
+        <span class="badge-worker">Ishchi</span>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="worker-content">
+
+      <!-- FORMA -->
+      <div class="worker-card" id="forma-card">
+        <h2><i class="fas fa-plus-circle"></i> Yangi Tovar Ma'lumotlari</h2>
+
+        <!-- RASM -->
+        <div class="rasm-zone" id="rasm-zone" onclick="document.getElementById('rasm-input').click()">
+          <input type="file" id="rasm-input" accept="image/*" style="display:none" onchange="rasmYukla(event)" />
+          <div id="rasm-preview-wrap">
+            <i class="fas fa-camera" id="rasm-icon"></i>
+            <p id="rasm-text">Rasm yuklash uchun bosing</p>
+          </div>
+          <img id="rasm-preview" style="display:none" />
+        </div>
+
+        <!-- FORMA MAYDONLARI -->
+        <div class="form-grid">
+
+          <div class="form-group full">
+            <label><i class="fas fa-tag"></i> Mahsulot nomi *</label>
+            <input type="text" id="w-nom" placeholder="masalan: Samsung Galaxy A55" />
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-th-large"></i> Kategoriya *</label>
+            <select id="w-kat">
+              <option value="">Tanlang</option>
+              <option>Televizor</option>
+              <option>Telefon</option>
+              <option>Laptop</option>
+              <option>Muzlatgich</option>
+              <option>Kir yuvish mashinasi</option>
+              <option>Konditsioner</option>
+              <option>Uy texnikasi</option>
+              <option>Boshqa</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-barcode"></i> Trek raqami</label>
+            <input type="text" id="w-trek" placeholder="TRK-20240001" />
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-yen-sign"></i> Xitoy narxi (Yuan ¥) *</label>
+            <input type="number" id="w-yuan" placeholder="0" oninput="hisoblaSom()" />
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-dollar-sign"></i> Xitoy narxi (USD $)</label>
+            <input type="number" id="w-usd" placeholder="0" />
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-coins"></i> Sotuv narxi (so'm) *</label>
+            <input type="number" id="w-som" placeholder="0" />
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-exchange-alt"></i> Yuan kursi (so'm)</label>
+            <input type="number" id="w-kurs" placeholder="350" value="350" oninput="hisoblaSom()" />
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-boxes"></i> Miqdor (dona) *</label>
+            <input type="number" id="w-miqdor" placeholder="1" min="1" />
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-exclamation-triangle"></i> Min. miqdor (ogohlantirish)</label>
+            <input type="number" id="w-min" placeholder="5" />
+          </div>
+
+          <div class="form-group full">
+            <label><i class="fas fa-info-circle"></i> Izoh / Tavsif</label>
+            <textarea id="w-izoh" placeholder="Mahsulot haqida qo'shimcha ma'lumot..."></textarea>
+          </div>
+
+        </div>
+
+        <!-- HISOBLAGICH -->
+        <div class="hisob-box" id="hisob-box" style="display:none">
+          <h4><i class="fas fa-calculator"></i> Narx hisob-kitobi</h4>
+          <div class="hisob-row">
+            <span>Yuan narxi:</span>
+            <span id="h-yuan">—</span>
+          </div>
+          <div class="hisob-row">
+            <span>Kurs:</span>
+            <span id="h-kurs">—</span>
+          </div>
+          <div class="hisob-row highlight">
+            <span>Tannarx (so'm):</span>
+            <span id="h-tannarx">—</span>
+          </div>
+          <div class="hisob-row">
+            <span>Sotuv narxi:</span>
+            <span id="h-sotuv">—</span>
+          </div>
+          <div class="hisob-row highlight green">
+            <span>Foyda:</span>
+            <span id="h-foyda">—</span>
+          </div>
+        </div>
+
+        <button class="btn-generate" onclick="qrYarat()">
+          <i class="fas fa-qrcode"></i> QR Code Yaratish
+        </button>
+      </div>
+
+      <!-- QR NATIJA -->
+      <div class="worker-card" id="qr-card" style="display:none">
+        <h2><i class="fas fa-qrcode"></i> QR Code Tayyor!</h2>
+
+        <div class="qr-result">
+          <div class="qr-wrap">
+            <div id="qr-code-div"></div>
+          </div>
+
+          <div class="qr-info">
+            <div class="qr-info-item">
+              <span class="qr-label">Mahsulot:</span>
+              <span id="qr-nom" class="qr-value"></span>
+            </div>
+            <div class="qr-info-item">
+              <span class="qr-label">Kategoriya:</span>
+              <span id="qr-kat" class="qr-value"></span>
+            </div>
+            <div class="qr-info-item">
+              <span class="qr-label">Trek:</span>
+              <span id="qr-trek" class="qr-value"></span>
+            </div>
+            <div class="qr-info-item">
+              <span class="qr-label">Yuan narxi:</span>
+              <span id="qr-yuan" class="qr-value"></span>
+            </div>
+            <div class="qr-info-item">
+              <span class="qr-label">Sotuv narxi:</span>
+              <span id="qr-som" class="qr-value"></span>
+            </div>
+            <div class="qr-info-item">
+              <span class="qr-label">Miqdor:</span>
+              <span id="qr-miqdor" class="qr-value"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="qr-actions">
+          <button class="btn-print" onclick="qrChopEt()">
+            <i class="fas fa-print"></i> Chop etish
+          </button>
+          <button class="btn-save" onclick="qrSaqlash()">
+            <i class="fas fa-download"></i> PNG Saqlash
+          </button>
+          <button class="btn-new" onclick="yangisi()">
+            <i class="fas fa-plus"></i> Yangi tovar
+          </button>
+        </div>
+
+        <!-- Chop etish uchun -->
+        <div id="print-area" style="display:none">
+          <div class="print-label">
+            <div id="print-qr"></div>
+            <div class="print-info">
+              <p class="print-nom" id="print-nom"></p>
+              <p id="print-trek"></p>
+              <p id="print-narx"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SO'NGGI QR KODLAR -->
+      <div class="worker-card" id="history-card">
+        <h2><i class="fas fa-history"></i> So'nggi yaratilgan QR kodlar</h2>
+        <div id="qr-history-list">
+          <p class="empty-text">Hali QR kod yaratilmagan</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="w-toast"></div>
+
+  <script src="worker.js"></script>
+</body>
+</html>

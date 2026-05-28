@@ -91,8 +91,10 @@ function saveMijoz() {
     mijozlar[idx] = { ...mijozlar[idx], ism, tel, manzil, izoh };
     showToast('Mijoz yangilandi!');
   } else {
-    mijozlar.push({ id: genId(), ism, tel, manzil, izoh, sana: today() });
+    const yangi = { id: genId(), ism, tel, manzil, izoh, sana: today() };
+    mijozlar.push(yangi);
     showToast('Yangi mijoz qo\'shildi!');
+    TG.mijozQoshildi(yangi);
   }
 
   DB.set('mijozlar', mijozlar);

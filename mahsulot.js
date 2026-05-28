@@ -218,19 +218,30 @@ function saveMahsulot() {
       rasm: mCurrentRasm || mahsulotlar[idx].rasm || null,
     };
     showToast('Mahsulot yangilandi!');
+    TG.mahsulotYangilandi(mahsulotlar[idx]);
   } else {
-    mahsulotlar.push({
+    const yangi = {
       id: genId(),
       nom, kat, trek, xitoyNarx,
       sotuvNarx, miqdor, min, izoh,
       rasm: mCurrentRasm || null,
       sana: today(),
       source: 'manual',
-    });
+    };
+    mahsulotlar.push(yangi);
     showToast('Yangi mahsulot qo\'shildi!');
+    TG.mahsulotQoshildi(yangi);
   }
 
   DB.set('mahsulotlar', mahsulotlar);
+
+  // Kam qolgan mahsulotlar tekshiruvi
+  mahsulotlar.forEach(m => {
+    if (Number(m.miqdor) > 0 && Number(m.miqdor) <= Number(m.min || 5)) {
+      TG.kamMahsulot(m);
+    }
+  });
+
   closeModal('mahsulot-modal');
   mRasmTozala();
   renderMahsulot();

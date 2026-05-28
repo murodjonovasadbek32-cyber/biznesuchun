@@ -90,8 +90,10 @@ function saveMoliya() {
     moliyalar[idx] = { id, tur, summa, tavsif, sana };
     showToast('Tranzaksiya yangilandi!');
   } else {
-    moliyalar.push({ id: genId(), tur, summa, tavsif, sana });
+    const yangi = { id: genId(), tur, summa, tavsif, sana };
+    moliyalar.push(yangi);
     showToast('Tranzaksiya qo\'shildi!');
+    TG.moliyaQoshildi(yangi);
   }
 
   DB.set('moliyalar', moliyalar);

@@ -40,6 +40,9 @@
       <a href="worker.html" class="nav-link" target="_blank">
         <i class="fas fa-qrcode"></i> <span>Ishchi Panel</span>
       </a>
+      <a href="#" class="nav-link" onclick="openTgSozlama()">
+        <i class="fab fa-telegram"></i> <span>Telegram Bot</span>
+      </a>
     </div>
     <div class="sidebar-footer">v2.0 | Uzum Market</div>
   </div>
@@ -490,6 +493,43 @@
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
+
+  <!-- ===== TELEGRAM SOZLAMA MODAL ===== -->
+  <div class="modal-bg" id="tg-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <h3><i class="fab fa-telegram" style="color:#229ed9"></i> Telegram Bot Sozlama</h3>
+        <button onclick="closeModal('tg-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:0.88rem;color:#0369a1">
+          <b>📱 Qanday ulash:</b><br>
+          1. Telegram da botni toping: <b>@biznesuchun_bot</b><br>
+          2. Botga <b>/start</b> yuboring<br>
+          3. Quyidagi tugmani bosib Chat ID ni avtomatik oling
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-id-card"></i> Chat ID</label>
+          <input type="text" id="tg-chat-id-input" placeholder="masalan: 123456789" />
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+          <button class="btn btn-secondary" style="flex:1;font-size:0.85rem" onclick="tgAvtoChatId()">
+            <i class="fas fa-magic"></i> Avtomatik olish
+          </button>
+          <button class="btn btn-success" style="flex:1;font-size:0.85rem" onclick="tgTestXabar()">
+            <i class="fas fa-paper-plane"></i> Test yuborish
+          </button>
+        </div>
+        <div id="tg-status" style="margin-top:0.75rem;font-size:0.83rem;text-align:center;color:#64748b"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('tg-modal')">Yopish</button>
+        <button class="btn btn-primary" onclick="tgChatIdSaqlash()">
+          <i class="fas fa-save"></i> Saqlash
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== QR SKANER MODAL ===== -->
   <div class="modal-bg" id="scanner-modal">

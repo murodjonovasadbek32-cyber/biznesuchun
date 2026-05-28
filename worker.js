@@ -3,6 +3,24 @@
 let currentRasmBase64 = null;
 let currentQRData = null;
 
+// ===== TELEGRAM BOT (WORKER) =====
+const TG_TOKEN = '8838693056:AAG0uZNDFcNGfAX4EiRKnhoDCZuzzhczaRo';
+
+async function tgWorkerXabar(matn) {
+  try {
+    // Chat ID ni localStorage dan olish
+    const chatId = localStorage.getItem('tg_chat_id');
+    if (!chatId) return; // Chat ID yo'q bo'lsa o'tkazib yuborish
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: matn, parse_mode: 'HTML' }),
+    });
+  } catch (e) {
+    console.warn('Telegram xabar yuborilmadi:', e);
+  }
+}
+
 // ===== TOAST =====
 function wToast(msg, type = 'success') {
   const t = document.getElementById('w-toast');
@@ -39,14 +57,23 @@ function rasmYukla(event) {
   reader.readAsDataURL(file);
 }
 
-// ===== NARX HISOBLASH =====
+// ===== NARX HISOBLASH — YUAN → SO'M AVTO =====
 function hisoblaSom() {
   const yuan = parseFloat(document.getElementById('w-yuan').value) || 0;
   const kurs = parseFloat(document.getElementById('w-kurs').value) || 350;
-  const som = parseFloat(document.getElementById('w-som').value) || 0;
 
-  if (yuan > 0) {
-    const tannarx = yuan * kurs;
+  if (yuan > 0 && kurs > 0) {
+    const tannarx = Math.round(yuan * kurs);
+
+    // ✅ Sotuv narxiga avtomatik 20% marja qo'shib yozish (foydalanuvchi o'zgartirishi mumkin)
+    const sotuvInput = document.getElementById('w-som');
+    if (!sotuvInput.value || sotuvInput.dataset.auto === 'true') {
+      const avtoSotuv = Math.round(tannarx * 1.2 / 1000) * 1000; // 20% marja, 1000 ga yaxlitlash
+      sotuvInput.value = avtoSotuv;
+      sotuvInput.dataset.auto = 'true';
+    }
+
+    const som = parseFloat(document.getElementById('w-som').value) || 0;
     const foyda = som - tannarx;
 
     const box = document.getElementById('hisob-box');
@@ -60,6 +87,12 @@ function hisoblaSom() {
       ? `${formatMoney(foyda)} (${((foyda / tannarx) * 100).toFixed(1)}%)`
       : '—';
   }
+}
+
+// Sotuv narxi qo'lda o'zgartirilsa avto flagni olib tashlash
+function sotuvOzgardi() {
+  document.getElementById('w-som').dataset.auto = 'false';
+  hisoblaSom();
 }
 
 function formatMoney(n) {
@@ -175,6 +208,23 @@ function qrYarat() {
 
   wToast('QR kod muvaffaqiyatli yaratildi!');
   renderHistory();
+
+  // ✅ Telegram botga xabar yuborish
+  const tannarx = parseFloat(yuan) * parseFloat(kurs || 350);
+  const foyda = parseFloat(som) - tannarx;
+  const tgMatn =
+    `📦 <b>Yangi QR Yaratildi!</b>\n\n` +
+    `🏷 Nomi: <b>${nom}</b>\n` +
+    `📂 Kategoriya: ${kat}\n` +
+    `🔖 Trek: <code>${qrData.trek}</code>\n` +
+    `💴 Yuan narxi: ¥${parseFloat(yuan).toLocaleString()}\n` +
+    `💱 Kurs: 1¥ = ${parseFloat(kurs).toLocaleString()} so'm\n` +
+    `💸 Tannarx: ${formatMoney(tannarx)}\n` +
+    `💰 Sotuv narxi: ${formatMoney(som)}\n` +
+    `📈 Foyda: ${formatMoney(foyda)}\n` +
+    `📦 Miqdor: ${miqdor} dona\n` +
+    `📅 Sana: ${today()}`;
+  tgWorkerXabar(tgMatn);
 }
 
 // ===== QR HISTORY SAQLASH =====

@@ -55,9 +55,27 @@ function changeHolat(id, newHolat) {
   const buyurtmalar = DB.get('buyurtmalar');
   const idx = buyurtmalar.findIndex(b => b.id === id);
   if (idx === -1) return;
+  const b = buyurtmalar[idx];
   buyurtmalar[idx].holat = newHolat;
   DB.set('buyurtmalar', buyurtmalar);
   showToast('Holat yangilandi!');
+
+  // Telegram xabar
+  TG.buyurtmaHolat(b, newHolat);
+
+  // Yetkazildi bo'lsa moliyaga kirim qo'sh
+  if (newHolat === 'yetkazildi') {
+    const moliyalar = DB.get('moliyalar');
+    moliyalar.push({
+      id: genId(),
+      tur: 'kirim',
+      tavsif: `Sotuv: ${b.mahsulotNom} (${b.miqdor} dona) — #${b.raqam}`,
+      summa: b.summa,
+      sana: today(),
+    });
+    DB.set('moliyalar', moliyalar);
+  }
+
   renderBuyurtma(document.getElementById('buyurtma-filter').value);
 }
 
@@ -163,19 +181,28 @@ function saveBuyurtma() {
         return;
       }
       mahsulotlar[mIdx].miqdor = Number(mahsulotlar[mIdx].miqdor) - miqdor;
+
+      // Kam qolgan bo'lsa ogohlantirish
+      if (Number(mahsulotlar[mIdx].miqdor) <= Number(mahsulotlar[mIdx].min || 5)) {
+        TG.kamMahsulot(mahsulotlar[mIdx]);
+      }
     }
 
     // Buyurtma raqami
     const raqam = String(buyurtmalar.length + 1).padStart(4, '0');
 
-    buyurtmalar.push({
+    const yangi = {
       id: genId(),
       raqam,
       mijozId, mijozNom: mijoz?.ism || '',
       mahsulotId, mahsulotNom: mahsulot?.nom || '',
       miqdor, summa, holat, tolov, izoh,
       sana: today(),
-    });
+    };
+    buyurtmalar.push(yangi);
+
+    // Telegram xabar
+    TG.buyurtmaQoshildi(yangi);
 
     // Moliyaga avtomatik kirim qo'shish (yetkazildi holati bo'lsa)
     if (holat === 'yetkazildi') {

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biznes Boshqaruv | Uzum Market Texnika</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">🛒 BiznesApp</span>
+      <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+    </div>
+    <nav>
+      <a href="#" class="nav-link active" onclick="showPage('dashboard')">
+        <i class="fas fa-chart-pie"></i> <span>Bosh sahifa</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('mahsulot')">
+        <i class="fas fa-box"></i> <span>Mahsulot / Ombor</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('mijoz')">
+        <i class="fas fa-users"></i> <span>Mijozlar</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('buyurtma')">
+        <i class="fas fa-shopping-cart"></i> <span>Buyurtmalar</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('moliya')">
+        <i class="fas fa-wallet"></i> <span>Moliya</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('hisobot')">
+        <i class="fas fa-chart-bar"></i> <span>Hisobotlar</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">v1.0 | Uzum Market</div>
+  </div>
+
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN -->
+  <div class="main" id="main">
+    <header class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <h1 class="page-title" id="pageTitle">Bosh sahifa</h1>
+      <div class="topbar-right">
+        <span class="date-badge" id="currentDate"></span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="stats-grid">
+          <div class="stat-card blue">
+            <i class="fas fa-box"></i>
+            <div>
+              <p>Jami mahsulotlar</p>
+              <h2 id="stat-mahsulot">0</h2>
+            </div>
+          </div>
+          <div class="stat-card green">
+            <i class="fas fa-users"></i>
+            <div>
+              <p>Jami mijozlar</p>
+              <h2 id="stat-mijoz">0</h2>
+            </div>
+          </div>
+          <div class="stat-card orange">
+            <i class="fas fa-shopping-cart"></i>
+            <div>
+              <p>Jami buyurtmalar</p>
+              <h2 id="stat-buyurtma">0</h2>
+            </div>
+          </div>
+          <div class="stat-card purple">
+            <i class="fas fa-coins"></i>
+            <div>
+              <p>Jami foyda</p>
+              <h2 id="stat-foyda">0 so'm</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3><i class="fas fa-exclamation-triangle"></i> Kam qolgan mahsulotlar</h3>
+            <div id="kam-mahsulot-list"><p class="empty">Ma'lumot yo'q</p></div>
+          </div>
+          <div class="card">
+            <h3><i class="fas fa-clock"></i> So'nggi buyurtmalar</h3>
+            <div id="songi-buyurtma-list"><p class="empty">Ma'lumot yo'q</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAHSULOT -->
+      <div id="page-mahsulot" class="page">
+        <div class="page-actions">
+          <input type="text" id="mahsulot-search" placeholder="🔍 Qidirish..." oninput="filterMahsulot()" />
+          <button class="btn btn-primary" onclick="openMahsulotModal()">
+            <i class="fas fa-plus"></i> Yangi mahsulot
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table id="mahsulot-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nomi</th>
+                <th>Kategoriya</th>
+                <th>Xitoy narxi ($)</th>
+                <th>Sotuv narxi (so'm)</th>
+                <th>Miqdor</th>
+                <th>Holat</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="mahsulot-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MIJOZ -->
+      <div id="page-mijoz" class="page">
+        <div class="page-actions">
+          <input type="text" id="mijoz-search" placeholder="🔍 Qidirish..." oninput="filterMijoz()" />
+          <button class="btn btn-primary" onclick="openMijozModal()">
+            <i class="fas fa-plus"></i> Yangi mijoz
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table id="mijoz-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Ism</th>
+                <th>Telefon</th>
+                <th>Manzil</th>
+                <th>Jami xarid</th>
+                <th>Sana</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="mijoz-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BUYURTMA -->
+      <div id="page-buyurtma" class="page">
+        <div class="page-actions">
+          <select id="buyurtma-filter" onchange="filterBuyurtma()">
+            <option value="">Barcha holat</option>
+            <option value="yangi">Yangi</option>
+            <option value="jarayonda">Jarayonda</option>
+            <option value="yetkazildi">Yetkazildi</option>
+            <option value="bekor">Bekor qilindi</option>
+          </select>
+          <button class="btn btn-primary" onclick="openBuyurtmaModal()">
+            <i class="fas fa-plus"></i> Yangi buyurtma
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table id="buyurtma-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Buyurtma №</th>
+                <th>Mijoz</th>
+                <th>Mahsulot</th>
+                <th>Miqdor</th>
+                <th>Summa</th>
+                <th>Holat</th>
+                <th>Sana</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="buyurtma-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MOLIYA -->
+      <div id="page-moliya" class="page">
+        <div class="moliya-stats">
+          <div class="stat-card green">
+            <i class="fas fa-arrow-up"></i>
+            <div><p>Jami kirim</p><h2 id="jami-kirim">0 so'm</h2></div>
+          </div>
+          <div class="stat-card red">
+            <i class="fas fa-arrow-down"></i>
+            <div><p>Jami chiqim</p><h2 id="jami-chiqim">0 so'm</h2></div>
+          </div>
+          <div class="stat-card blue">
+            <i class="fas fa-coins"></i>
+            <div><p>Sof foyda</p><h2 id="sof-foyda">0 so'm</h2></div>
+          </div>
+        </div>
+        <div class="page-actions" style="margin-top:1rem">
+          <select id="moliya-filter" onchange="filterMoliya()">
+            <option value="">Barchasi</option>
+            <option value="kirim">Kirim</option>
+            <option value="chiqim">Chiqim</option>
+          </select>
+          <button class="btn btn-primary" onclick="openMoliyaModal()">
+            <i class="fas fa-plus"></i> Yangi tranzaksiya
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table id="moliya-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Sana</th>
+                <th>Turi</th>
+                <th>Tavsif</th>
+                <th>Summa</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="moliya-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- HISOBOT -->
+      <div id="page-hisobot" class="page">
+        <div class="hisobot-filter">
+          <label>Davr:</label>
+          <select id="hisobot-davr" onchange="renderHisobot()">
+            <option value="kun">Bugun</option>
+            <option value="hafta">Bu hafta</option>
+            <option value="oy" selected>Bu oy</option>
+            <option value="yil">Bu yil</option>
+          </select>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card blue"><i class="fas fa-shopping-cart"></i><div><p>Buyurtmalar</p><h2 id="h-buyurtma">0</h2></div></div>
+          <div class="stat-card green"><i class="fas fa-coins"></i><div><p>Kirim</p><h2 id="h-kirim">0 so'm</h2></div></div>
+          <div class="stat-card red"><i class="fas fa-minus-circle"></i><div><p>Chiqim</p><h2 id="h-chiqim">0 so'm</h2></div></div>
+          <div class="stat-card purple"><i class="fas fa-chart-line"></i><div><p>Foyda</p><h2 id="h-foyda">0 so'm</h2></div></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3><i class="fas fa-trophy"></i> Eng ko'p sotilgan mahsulotlar</h3>
+            <div id="top-mahsulot"></div>
+          </div>
+          <div class="card">
+            <h3><i class="fas fa-star"></i> Eng faol mijozlar</h3>
+            <div id="top-mijoz"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== MODALLAR ===== -->
+
+  <!-- Mahsulot Modal -->
+  <div class="modal-bg" id="mahsulot-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="mahsulot-modal-title">Yangi mahsulot</h3>
+        <button onclick="closeModal('mahsulot-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="m-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mahsulot nomi *</label>
+            <input type="text" id="m-nom" placeholder="masalan: Samsung TV 55'" />
+          </div>
+          <div class="form-group">
+            <label>Kategoriya *</label>
+            <select id="m-kat">
+              <option value="">Tanlang</option>
+              <option>Televizor</option>
+              <option>Telefon</option>
+              <option>Laptop</option>
+              <option>Muzlatgich</option>
+              <option>Kir yuvish mashinasi</option>
+              <option>Konditsioner</option>
+              <option>Uy texnikasi</option>
+              <option>Boshqa</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Xitoy narxi ($) *</label>
+            <input type="number" id="m-xitoy-narx" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label>Sotuv narxi (so'm) *</label>
+            <input type="number" id="m-sotuv-narx" placeholder="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Miqdor (dona) *</label>
+            <input type="number" id="m-miqdor" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label>Minimal miqdor (ogohlantirish)</label>
+            <input type="number" id="m-min" placeholder="5" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Izoh</label>
+          <textarea id="m-izoh" placeholder="Qo'shimcha ma'lumot..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('mahsulot-modal')">Bekor</button>
+        <button class="btn btn-primary" onclick="saveMahsulot()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mijoz Modal -->
+  <div class="modal-bg" id="mijoz-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="mijoz-modal-title">Yangi mijoz</h3>
+        <button onclick="closeModal('mijoz-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="mj-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ism Familiya *</label>
+            <input type="text" id="mj-ism" placeholder="Ali Valiyev" />
+          </div>
+          <div class="form-group">
+            <label>Telefon *</label>
+            <input type="text" id="mj-tel" placeholder="+998 90 123 45 67" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Manzil</label>
+            <input type="text" id="mj-manzil" placeholder="Toshkent, Chilonzor" />
+          </div>
+          <div class="form-group">
+            <label>Izoh</label>
+            <input type="text" id="mj-izoh" placeholder="VIP, doimiy mijoz..." />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('mijoz-modal')">Bekor</button>
+        <button class="btn btn-primary" onclick="saveMijoz()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buyurtma Modal -->
+  <div class="modal-bg" id="buyurtma-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="buyurtma-modal-title">Yangi buyurtma</h3>
+        <button onclick="closeModal('buyurtma-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="b-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mijoz *</label>
+            <select id="b-mijoz"></select>
+          </div>
+          <div class="form-group">
+            <label>Mahsulot *</label>
+            <select id="b-mahsulot" onchange="updateBuyurtmaNarx()"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Miqdor *</label>
+            <input type="number" id="b-miqdor" value="1" min="1" oninput="updateBuyurtmaNarx()" />
+          </div>
+          <div class="form-group">
+            <label>Summa (so'm)</label>
+            <input type="number" id="b-summa" placeholder="Avtomatik" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Holat</label>
+            <select id="b-holat">
+              <option value="yangi">Yangi</option>
+              <option value="jarayonda">Jarayonda</option>
+              <option value="yetkazildi">Yetkazildi</option>
+              <option value="bekor">Bekor qilindi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>To'lov turi</label>
+            <select id="b-tolov">
+              <option value="naqd">Naqd</option>
+              <option value="karta">Karta</option>
+              <option value="nasiya">Nasiya</option>
+              <option value="uzum">Uzum Pay</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Izoh</label>
+          <textarea id="b-izoh" placeholder="Qo'shimcha..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('buyurtma-modal')">Bekor</button>
+        <button class="btn btn-primary" onclick="saveBuyurtma()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Moliya Modal -->
+  <div class="modal-bg" id="moliya-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="moliya-modal-title">Yangi tranzaksiya</h3>
+        <button onclick="closeModal('moliya-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="mo-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Turi *</label>
+            <select id="mo-tur">
+              <option value="kirim">Kirim</option>
+              <option value="chiqim">Chiqim</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Summa (so'm) *</label>
+            <input type="number" id="mo-summa" placeholder="0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tavsif *</label>
+          <input type="text" id="mo-tavsif" placeholder="masalan: Xitoydan tovar keldi, yoki Ijara..." />
+        </div>
+        <div class="form-group">
+          <label>Sana</label>
+          <input type="date" id="mo-sana" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('moliya-modal')">Bekor</button>
+        <button class="btn btn-primary" onclick="saveMoliya()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+  <script src="mahsulot.js"></script>
+  <script src="mijoz.js"></script>
+  <script src="buyurtma.js"></script>
+  <script src="moliya.js"></script>
+  <script src="hisobot.js"></script>
+</body>
+</html>

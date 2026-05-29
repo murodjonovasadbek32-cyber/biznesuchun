@@ -1,212 +1,291 @@
-// ===== QR SKANER MODULI =====
-// html5-qrcode kutubxonasi ishlatiladi
+// ╔══════════════════════════════════════════════════════════════╗
+// ║   SCANNER.JS — QR Skaner v3.0                              ║
+// ║   html5-qrcode + Web Audio API ovoz + Debounce             ║
+// ╚══════════════════════════════════════════════════════════════╝
 
-let html5QrScanner = null;
-let scannerActive = false;
+// ─── Holat ────────────────────────────────────────────────────
+let _scanner       = null;
+let _scanActive    = false;
+let _lastScanned   = null;      // Qayta skan oldini olish
+let _lastScanTime  = 0;
+let _soundEnabled  = true;
+let _audioCtx      = null;
+const SCAN_COOLDOWN = 2500;     // ms — bir xil QR qayta skan bo'lmasin
 
-// ===== SKANER MODALNI OCHISH =====
-function openScanner() {
-  document.getElementById('scanner-modal').classList.add('open');
-  document.getElementById('scan-result-box').style.display = 'none';
-  document.getElementById('scan-manual-input').value = '';
-  startScanner();
+// ─── Web Audio API sozlash ────────────────────────────────────
+function _initAudio() {
+  if (_audioCtx) return;
+  try {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    console.warn('[Audio] Web Audio API ishlamaydi:', e.message);
+  }
 }
 
-// ===== SKANER MODALNI YOPISH =====
+// ─── Muvaffaqiyat ovozi: "tiin" signal ───────────────────────
+function playSuccessSound() {
+  if (!_soundEnabled) return;
+  _initAudio();
+  if (!_audioCtx) return;
+
+  try {
+    // Oscillator bilan "beep" ovozi
+    const osc  = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(_audioCtx.destination);
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1046.5, _audioCtx.currentTime);      // C6
+    osc.frequency.setValueAtTime(1318.5, _audioCtx.currentTime + 0.08); // E6
+
+    gain.gain.setValueAtTime(0.35, _audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.3);
+
+    osc.start(_audioCtx.currentTime);
+    osc.stop(_audioCtx.currentTime + 0.3);
+  } catch (e) {
+    console.warn('[Audio] ovoz xatosi:', e.message);
+  }
+}
+
+// ─── Xato ovozi ───────────────────────────────────────────────
+function playErrorSound() {
+  if (!_soundEnabled) return;
+  _initAudio();
+  if (!_audioCtx) return;
+
+  try {
+    const osc  = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(_audioCtx.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, _audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.2, _audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.25);
+    osc.start(_audioCtx.currentTime);
+    osc.stop(_audioCtx.currentTime + 0.25);
+  } catch (e) {}
+}
+
+// ──────────────────────────────────────────────────────────────
+//  SKANER MODALNI OCHISH
+// ──────────────────────────────────────────────────────────────
+function openScanner() {
+  // Audio kontekstni foydalanuvchi gesture orqali aktivlashtirish
+  _initAudio();
+  if (_audioCtx?.state === 'suspended') {
+    _audioCtx.resume();
+  }
+
+  const modal = document.getElementById('scanner-modal');
+  modal.classList.add('open');
+  document.getElementById('scan-result-box').style.display = 'none';
+  document.getElementById('scan-status').className = 'scan-status';
+  document.getElementById('scan-status').textContent = '📷 Kamera yoqilmoqda...';
+
+  _lastScanned = null;
+  _startScanner();
+}
+
 function closeScanner() {
-  stopScanner();
+  _stopScanner();
   document.getElementById('scanner-modal').classList.remove('open');
 }
 
-// ===== SKANER ISHGA TUSHIRISH =====
-function startScanner() {
-  if (scannerActive) return;
+// ──────────────────────────────────────────────────────────────
+//  SKANER ISHGA TUSHIRISH
+// ──────────────────────────────────────────────────────────────
+function _startScanner() {
+  if (_scanActive) return;
 
   const config = {
-    fps: 10,
-    qrbox: { width: 250, height: 250 },
+    fps: 15,
+    qrbox: (w, h) => {
+      const s = Math.min(w, h) * 0.72;
+      return { width: Math.round(s), height: Math.round(s) };
+    },
     aspectRatio: 1.0,
     showTorchButtonIfSupported: true,
+    showZoomSliderIfSupported:  true,
+    defaultZoomValueIfSupported: 2,
+    rememberLastUsedCamera: true,
+    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
   };
 
-  html5QrScanner = new Html5Qrcode('qr-reader');
+  _scanner = new Html5Qrcode('qr-reader', {
+    verbose: false,
+    experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+  });
 
-  html5QrScanner.start(
-    { facingMode: 'environment' }, // Orqa kamera
+  _scanner.start(
+    { facingMode: 'environment' },
     config,
-    onScanSuccess,
-    onScanError
-  ).then(() => {
-    scannerActive = true;
-    document.getElementById('scan-status').textContent = '📷 Kamera tayyor — QR kodni ko\'rsating';
-    document.getElementById('scan-status').className = 'scan-status active';
-  }).catch(err => {
-    console.error('Kamera xatosi:', err);
-    document.getElementById('scan-status').textContent = '❌ Kamera ochilmadi. Qo\'lda kiriting.';
-    document.getElementById('scan-status').className = 'scan-status error';
-    document.getElementById('manual-section').style.display = 'block';
+    _onScanSuccess,
+    _onScanError
+  )
+  .then(() => {
+    _scanActive = true;
+    _setScanStatus('active', '📷 Tayyor — QR kodni ko\'rsating');
+  })
+  .catch(err => {
+    console.error('[Scanner] kamera xatosi:', err);
+    _setScanStatus('error', '❌ Kamera ochilmadi');
+    document.getElementById('manual-section').style.display = 'flex';
+    playErrorSound();
   });
 }
 
-// ===== SKANER TO'XTATISH =====
-function stopScanner() {
-  if (html5QrScanner && scannerActive) {
-    html5QrScanner.stop().then(() => {
-      html5QrScanner.clear();
-      scannerActive = false;
-    }).catch(err => console.warn('Skaner to\'xtatishda xatolik:', err));
+// ──────────────────────────────────────────────────────────────
+//  SKANER TO'XTATISH
+// ──────────────────────────────────────────────────────────────
+function _stopScanner() {
+  if (_scanner && _scanActive) {
+    _scanner.stop()
+      .then(() => { _scanner.clear(); _scanActive = false; _scanner = null; })
+      .catch(() => { _scanActive = false; _scanner = null; });
   }
 }
 
-// ===== MUVAFFAQIYATLI SKAN =====
-function onScanSuccess(decodedText) {
-  stopScanner();
+// ──────────────────────────────────────────────────────────────
+//  MUVAFFAQIYATLI SKAN
+// ──────────────────────────────────────────────────────────────
+async function _onScanSuccess(decodedText) {
+  const now = Date.now();
 
-  // Vibro (mobil uchun)
-  if (navigator.vibrate) navigator.vibrate(200);
+  // Debounce: bir xil QR qayta skan bo'lmasin
+  if (decodedText === _lastScanned && (now - _lastScanTime) < SCAN_COOLDOWN) return;
+  _lastScanned  = decodedText;
+  _lastScanTime = now;
+
+  _stopScanner();
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+  _setScanStatus('loading', '⏳ Ma\'lumotlar yuklanmoqda...');
 
   try {
-    const data = JSON.parse(decodedText);
-    if (!data.nom || !data.som) {
-      showScanError('Bu QR kod bizning formatda emas!');
+    // URL parametridan product ID ni ajratish
+    let productId = null;
+
+    // 1. URL format: ...?product=abc123
+    try {
+      const url  = new URL(decodedText);
+      productId  = url.searchParams.get('product');
+    } catch {}
+
+    // 2. To'g'ridan ID bo'lishi ham mumkin
+    if (!productId && !decodedText.includes('://')) {
+      productId = decodedText.trim();
+    }
+
+    if (!productId) {
+      throw new Error('Mahsulot ID topilmadi: ' + decodedText);
+    }
+
+    // mahsulot.js dan qrMahsulotQabul chaqirish
+    const natija = await qrMahsulotQabul(productId);
+
+    if (natija.topilmadi) {
+      _setScanStatus('warning', `⚠️ Mahsulot topilmadi (ID: ${productId.slice(0,8)}...)`);
+      playErrorSound();
+      _showScanResultUnknown(productId);
       return;
     }
-    showScanResult(data);
-  } catch (e) {
-    showScanError('QR kod o\'qildi, lekin format noto\'g\'ri!');
-    console.error(e);
+
+    // ✅ Muvaffaqiyat
+    playSuccessSound();
+    _setScanStatus('success', '✅ Mahsulot omborga qo\'shildi!');
+    _showScanResult(natija);
+
+  } catch (err) {
+    console.error('[Scanner] xatolik:', err);
+    playErrorSound();
+    _setScanStatus('error', '❌ ' + err.message);
+    setTimeout(() => _startScanner(), 2500);
   }
 }
 
-// ===== SKANER XATOSI (log sifatida, foydalanuvchiga ko'rsatilmaydi) =====
-function onScanError(error) {
-  // Doimiy xato loglarni yashiramiz
+function _onScanError() {
+  // Doimiy "scan failed" loglarini yashirish — normal holat
 }
 
-// ===== SCAN NATIJASINI KO'RSATISH =====
-function showScanResult(data) {
-  document.getElementById('scan-status').textContent = '✅ QR kod muvaffaqiyatli o\'qildi!';
-  document.getElementById('scan-status').className = 'scan-status success';
-
+// ──────────────────────────────────────────────────────────────
+//  NATIJANI KO'RSATISH
+// ──────────────────────────────────────────────────────────────
+function _showScanResult(natija) {
   const box = document.getElementById('scan-result-box');
   box.style.display = 'block';
 
   // Rasm
   const rasmEl = document.getElementById('scan-rasm');
-  const rasmsiz = document.getElementById('scan-rasmsiz');
-
-  // Rasmni QR history dan qidirish
-  const history = JSON.parse(localStorage.getItem('qr_history') || '[]');
-  const historyItem = history.find(h => h.id === data.id);
-  const rasm = historyItem?.rasm || null;
-
-  if (rasm) {
-    rasmEl.src = rasm;
+  if (natija.rasm) {
+    rasmEl.src = natija.rasm;
     rasmEl.style.display = 'block';
-    rasmsiz.style.display = 'none';
   } else {
     rasmEl.style.display = 'none';
-    rasmsiz.style.display = 'flex';
   }
 
-  // Ma'lumotlar
-  document.getElementById('scan-nom').textContent = data.nom || '—';
-  document.getElementById('scan-kat').textContent = data.kat || '—';
-  document.getElementById('scan-trek').textContent = data.trek || '—';
-  document.getElementById('scan-yuan').textContent = data.yuan ? `¥${Number(data.yuan).toLocaleString()}` : '—';
-  document.getElementById('scan-usd').textContent = data.usd ? `$${Number(data.usd).toLocaleString()}` : '—';
-  document.getElementById('scan-som').textContent = data.som ? formatMoneyS(data.som) : '—';
-  document.getElementById('scan-miqdor').textContent = data.miqdor ? `${data.miqdor} dona` : '—';
-  document.getElementById('scan-sana').textContent = data.sana ? formatDateS(data.sana) : '—';
+  document.getElementById('scan-nom').textContent    = natija.nom || '—';
+  document.getElementById('scan-miqdor').textContent = `${natija.miqdor} dona`;
+  document.getElementById('scan-yangi').textContent  = natija.yangi ? '🆕 Yangi qo\'shildi' : '♻️ Mavjud yangilandi';
+  document.getElementById('scan-yangi').className    = natija.yangi ? 'scan-tag new' : 'scan-tag updated';
 
-  // Saqlash tugmasiga data biriktirish
-  document.getElementById('btn-scan-saqlash').onclick = () => scanMahsulotSaqlash(data, rasm);
   document.getElementById('btn-scan-qayta').onclick = () => {
     box.style.display = 'none';
-    startScanner();
+    _lastScanned = null;
+    _startScanner();
   };
+  document.getElementById('btn-scan-yopish').onclick = () => closeScanner();
 }
 
-// ===== SCAN XATOSINI KO'RSATISH =====
-function showScanError(msg) {
-  document.getElementById('scan-status').textContent = '❌ ' + msg;
-  document.getElementById('scan-status').className = 'scan-status error';
-  document.getElementById('manual-section').style.display = 'block';
-  setTimeout(() => startScanner(), 2000);
+function _showScanResultUnknown(productId) {
+  const box = document.getElementById('scan-result-box');
+  box.style.display = 'block';
+  document.getElementById('scan-rasm').style.display = 'none';
+  document.getElementById('scan-nom').textContent    = 'Noma\'lum mahsulot';
+  document.getElementById('scan-miqdor').textContent = '—';
+  document.getElementById('scan-yangi').textContent  = '❓ Tizimda yo\'q';
+  document.getElementById('scan-yangi').className    = 'scan-tag error';
+
+  document.getElementById('btn-scan-qayta').onclick = () => {
+    box.style.display = 'none';
+    _lastScanned = null;
+    _startScanner();
+  };
+  document.getElementById('btn-scan-yopish').onclick = () => closeScanner();
 }
 
-// ===== QO'LDA JSON KIRITISH =====
-function manualScan() {
+// ──────────────────────────────────────────────────────────────
+//  QO'LDA PRODUCT ID KIRITISH
+// ──────────────────────────────────────────────────────────────
+async function manualScan() {
   const val = document.getElementById('scan-manual-input').value.trim();
-  if (!val) {
-    showToast('Matn kiriting!', 'error');
-    return;
+  if (!val) { showToast('Product ID yoki URL kiriting!', 'error'); return; }
+  await _onScanSuccess(val);
+}
+
+// ──────────────────────────────────────────────────────────────
+//  STATUS KO'RSATISH
+// ──────────────────────────────────────────────────────────────
+function _setScanStatus(type, text) {
+  const el = document.getElementById('scan-status');
+  el.textContent = text;
+  el.className   = `scan-status ${type}`;
+}
+
+// ──────────────────────────────────────────────────────────────
+//  OVOZ TOGGLE
+// ──────────────────────────────────────────────────────────────
+function toggleScanSound() {
+  _soundEnabled = !_soundEnabled;
+  const btn = document.getElementById('sound-toggle-btn');
+  if (btn) {
+    btn.innerHTML = _soundEnabled
+      ? '<i class="fas fa-volume-up"></i>'
+      : '<i class="fas fa-volume-mute"></i>';
+    btn.title = _soundEnabled ? 'Ovozni o\'chirish' : 'Ovozni yoqish';
   }
-  try {
-    const data = JSON.parse(val);
-    if (!data.nom) throw new Error('nom yo\'q');
-    onScanSuccess(val);
-  } catch (e) {
-    showToast('Noto\'g\'ri format!', 'error');
-  }
-}
-
-// ===== SKAN QR DAN MAHSULOT SAQLASH =====
-function scanMahsulotSaqlash(data, rasm) {
-  // mahsulot.js dagi qrMahsulotQabul funksiyasini chaqiramiz
-  const natija = qrMahsulotQabul(data, rasm);
-
-  // ✅ Telegram botga xabar — QR skan orqali
-  const tgMatn = natija.yangi
-    ? `📱 <b>QR Skan — Yangi Mahsulot!</b>\n\n` +
-      `🏷 Nomi: <b>${data.nom}</b>\n` +
-      `📂 Kategoriya: ${data.kat || '—'}\n` +
-      `${data.trek ? `🔖 Trek: <code>${data.trek}</code>\n` : ''}` +
-      `💴 Yuan narxi: ¥${Number(data.yuan || 0).toLocaleString()}\n` +
-      `💰 Sotuv narxi: ${Number(data.som || 0).toLocaleString()} so'm\n` +
-      `📦 Qo'shilgan miqdor: ${data.miqdor} dona\n` +
-      `📅 Sana: ${data.sana || today()}`
-    : `📱 <b>QR Skan — Mahsulot Yangilandi!</b>\n\n` +
-      `🏷 Nomi: <b>${natija.nom}</b>\n` +
-      `📦 Yangi jami miqdor: <b>${natija.miqdor} dona</b>\n` +
-      `➕ Qo'shildi: ${data.miqdor} dona\n` +
-      `💰 Sotuv narxi: ${Number(data.som || 0).toLocaleString()} so'm\n` +
-      `📅 Sana: ${today()}`;
-
-  // app.js dagi TG obyektini ishlatamiz
-  if (typeof TG !== 'undefined') {
-    TG.xabar(tgMatn);
-  }
-
-  if (natija.yangi) {
-    showToast(`✅ Yangi mahsulot qo'shildi: ${natija.nom}`);
-  } else {
-    showToast(`✅ "${natija.nom}" yangilandi! Miqdor: ${natija.miqdor} dona`);
-  }
-
-  closeScanner();
-
-  // Mahsulot sahifasiga o'tish va render
-  showPage('mahsulot');
-  renderMahsulot();
-}
-
-// ===== YORDAMCHI FUNKSIYALAR =====
-function formatMoneyS(n) {
-  if (!n) return '—';
-  return Number(n).toLocaleString('uz-UZ') + ' so\'m';
-}
-
-function formatDateS(str) {
-  if (!str) return '';
-  const d = new Date(str);
-  return d.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  showToast(_soundEnabled ? '🔊 Ovoz yoqildi' : '🔇 Ovoz o\'chirildi');
 }

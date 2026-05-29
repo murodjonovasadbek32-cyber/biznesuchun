@@ -8,9 +8,11 @@ const TG_TOKEN = '8838693056:AAG0uZNDFcNGfAX4EiRKnhoDCZuzzhczaRo';
 
 async function tgWorkerXabar(matn) {
   try {
-    // Chat ID ni localStorage dan olish
+    // Chat ID — default yoki localStorage dan
+    if (!localStorage.getItem('tg_chat_id')) {
+      localStorage.setItem('tg_chat_id', '6946915342');
+    }
     const chatId = localStorage.getItem('tg_chat_id');
-    if (!chatId) return; // Chat ID yo'q bo'lsa o'tkazib yuborish
     await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

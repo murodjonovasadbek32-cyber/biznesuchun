@@ -280,12 +280,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ===== TELEGRAM CHAT ID AVTOMATIK OLISH =====
 async function tgChatIdYukla() {
-  // Agar chat_id yo'q bo'lsa botdan olib saqlash
+  // Default Chat ID — har doim o'rnatiladi
+  const DEFAULT_CHAT_ID = '6946915342';
   if (!localStorage.getItem('tg_chat_id')) {
-    const id = await TG.chatIdOl();
-    if (id) {
-      showToast('✅ Telegram bot ulandi! Chat ID: ' + id);
-    }
+    localStorage.setItem('tg_chat_id', DEFAULT_CHAT_ID);
   }
 }
 

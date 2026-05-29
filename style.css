@@ -704,3 +704,177 @@ tbody tr:hover { background: #f8fafc; }
   color: white;
   background: rgba(165,180,252,0.15);
 }
+
+
+/* ===== TOPBAR HISOBOT TUGMASI ===== */
+.btn-tg-hisobot {
+  background: linear-gradient(135deg, #229ed9, #1a7fb0);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(34,158,217,0.3);
+}
+.btn-tg-hisobot:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34,158,217,0.4);
+}
+
+/* ===== TREK SAHIFASI ===== */
+.trek-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+.trek-stat-item {
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.trek-holat-badge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.trek-code {
+  font-family: monospace;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #6c63ff;
+}
+
+/* ===== KALKULYATOR ===== */
+.kalk-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: var(--card);
+  padding: 0.4rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  width: fit-content;
+}
+.kalk-tab {
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-light);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.kalk-tab.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(108,99,255,0.3);
+}
+.kalk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 900px) {
+  .kalk-grid { grid-template-columns: 1fr; }
+}
+.kalk-result-grid { display: flex; flex-direction: column; gap: 0; }
+.kalk-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.kalk-row:last-child { border-bottom: none; }
+.kalk-row.highlight { background: #f8fafc; padding: 0.5rem 0.5rem; border-radius: 6px; }
+.kalk-row.big { padding: 0.75rem 0; }
+.kalk-row.green { background: #f0fdf4; padding: 0.5rem 0.5rem; border-radius: 6px; }
+.profit-bar-wrap { margin-top: 1rem; }
+.profit-bar-bg {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ===== UZUM CHART ===== */
+.u-chart-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+.u-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-light);
+}
+.u-chart-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.u-chart-legend span span {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ===== XODIMLAR ===== */
+.rollar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.rol-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* ===== KALKULATOR MODAL TRIGGER (Mahsulot formida) ===== */
+.btn-kalkulator {
+  background: linear-gradient(135deg, #6c63ff, #a855f7);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+  margin-top: 0.25rem;
+}
+.btn-kalkulator:hover { opacity: 0.9; }

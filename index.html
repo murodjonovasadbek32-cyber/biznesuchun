@@ -18,23 +18,32 @@
       <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
     </div>
     <nav>
-      <a href="#" class="nav-link active" onclick="showPage('dashboard')">
+      <a href="#" class="nav-link active" onclick="showPage('dashboard')" data-page="dashboard">
         <i class="fas fa-chart-pie"></i> <span>Bosh sahifa</span>
       </a>
-      <a href="#" class="nav-link" onclick="showPage('mahsulot')">
+      <a href="#" class="nav-link" onclick="showPage('mahsulot')" data-page="mahsulot">
         <i class="fas fa-box"></i> <span>Mahsulot / Ombor</span>
       </a>
-      <a href="#" class="nav-link" onclick="showPage('mijoz')">
+      <a href="#" class="nav-link" onclick="showPage('mijoz')" data-page="mijoz">
         <i class="fas fa-users"></i> <span>Mijozlar</span>
       </a>
-      <a href="#" class="nav-link" onclick="showPage('buyurtma')">
+      <a href="#" class="nav-link" onclick="showPage('buyurtma')" data-page="buyurtma">
         <i class="fas fa-shopping-cart"></i> <span>Buyurtmalar</span>
       </a>
-      <a href="#" class="nav-link" onclick="showPage('moliya')">
+      <a href="#" class="nav-link" onclick="showPage('moliya')" data-page="moliya">
         <i class="fas fa-wallet"></i> <span>Moliya</span>
       </a>
-      <a href="#" class="nav-link" onclick="showPage('hisobot')">
+      <a href="#" class="nav-link" onclick="showPage('hisobot')" data-page="hisobot">
         <i class="fas fa-chart-bar"></i> <span>Hisobotlar</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('trek')" data-page="trek">
+        <i class="fas fa-shipping-fast"></i> <span>Trek Nazorat</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('kalkulator')" data-page="kalkulator">
+        <i class="fas fa-calculator"></i> <span>Kalkulyator</span>
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('xodim')" data-page="xodim">
+        <i class="fas fa-user-tie"></i> <span>Xodimlar</span>
       </a>
     </nav>
       <a href="worker.html" class="nav-link" target="_blank">
@@ -43,8 +52,20 @@
       <a href="#" class="nav-link" onclick="openTgSozlama()">
         <i class="fab fa-telegram"></i> <span>Telegram Bot</span>
       </a>
+      <a href="#" class="nav-link" onclick="openFirebaseModal()" style="color:#f97316">
+        <i class="fas fa-cloud"></i> <span>Firebase Bulut</span>
+      </a>
     </div>
-    <div class="sidebar-footer">v2.0 | Uzum Market</div>
+    <div class="sidebar-footer">
+      <div id="user-badge" style="display:none;align-items:center;gap:0.3rem;padding:0.4rem 0.8rem;border-radius:20px;margin-bottom:0.4rem;font-size:0.82rem;font-weight:600"></div>
+      <div style="display:flex;gap:0.5rem;justify-content:center;align-items:center">
+        <span id="fb-status-badge" style="padding:0.2rem 0.6rem;border-radius:12px;font-size:0.75rem;font-weight:600;background:#ffedd5;color:#9a3412">💾 Lokal</span>
+        <button onclick="logoutXodim()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.75rem;cursor:pointer" title="Chiqish">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+      v2.5 | Uzum Market
+    </div>
   </div>
 
   <!-- OVERLAY -->
@@ -58,6 +79,9 @@
       <div class="topbar-right">
         <button class="btn btn-qr-scan" onclick="openScanner()" title="QR Skaner">
           <i class="fas fa-qrcode"></i> QR Skan
+        </button>
+        <button class="btn btn-tg-hisobot" onclick="kunlikHisobotYuborish()" title="Kunlik hisobotni hozir yuborish">
+          <i class="fab fa-telegram"></i> Hisobot
         </button>
         <span class="date-badge" id="currentDate"></span>
       </div>
@@ -255,6 +279,9 @@
             <option value="oy" selected>Bu oy</option>
             <option value="yil">Bu yil</option>
           </select>
+          <button class="btn btn-primary" onclick="kunlikHisobotYuborish()" style="font-size:0.85rem">
+            <i class="fab fa-telegram"></i> TG ga yuborish
+          </button>
         </div>
         <div class="stats-grid">
           <div class="stat-card blue"><i class="fas fa-shopping-cart"></i><div><p>Buyurtmalar</p><h2 id="h-buyurtma">0</h2></div></div>
@@ -271,6 +298,220 @@
             <h3><i class="fas fa-star"></i> Eng faol mijozlar</h3>
             <div id="top-mijoz"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- TREK NAZORAT -->
+      <div id="page-trek" class="page">
+        <div id="trek-stats" class="trek-stats-grid" style="margin-bottom:1rem"></div>
+        <div class="page-actions">
+          <input type="text" id="trek-search" placeholder="🔍 Trek yoki mahsulot qidirish..." oninput="filterTreklar()" />
+          <button class="btn btn-primary" onclick="openTrekModal()">
+            <i class="fas fa-plus"></i> Trek qo'shish
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Trek raqami</th>
+                <th>Mahsulot</th>
+                <th>Holat</th>
+                <th>Yangilangan</th>
+                <th>Holat o'zgartirish</th>
+              </tr>
+            </thead>
+            <tbody id="trek-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- KALKULYATOR SAHIFASI -->
+      <div id="page-kalkulator" class="page">
+        <div class="kalk-tabs">
+          <button class="kalk-tab active" onclick="switchKalkTab('narx', this)">
+            <i class="fas fa-calculator"></i> Narx kalkulyatori
+          </button>
+          <button class="kalk-tab" onclick="switchKalkTab('uzum', this)">
+            <i class="fas fa-store"></i> Uzum Market foyda
+          </button>
+        </div>
+
+        <!-- NARX KALKULYATORI -->
+        <div id="kalk-narx-tab" class="kalk-content">
+          <div class="kalk-grid">
+            <div class="card">
+              <h3><i class="fas fa-calculator"></i> Narx hisoblash</h3>
+              <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">Formula: Yuan × kurs + kargo + komissiya + reklama = Sotuv narxi</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label><i class="fas fa-yen-sign" style="color:#6c63ff"></i> Yuan narxi (¥) *</label>
+                  <input type="number" id="k-yuan" placeholder="0" oninput="hisoblaNarx()" />
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-exchange-alt" style="color:#6c63ff"></i> Yuan kursi (so'm)</label>
+                  <input type="number" id="k-kurs" value="1820" oninput="hisoblaNarx()" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label><i class="fas fa-ship" style="color:#f97316"></i> Kargo (jami, so'm)</label>
+                  <input type="number" id="k-kargo" placeholder="0" oninput="hisoblaNarx()" />
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-boxes" style="color:#f97316"></i> Miqdor (dona)</label>
+                  <input type="number" id="k-miqdor" value="1" min="1" oninput="hisoblaNarx()" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label><i class="fas fa-percentage" style="color:#a855f7"></i> Komissiya (%)</label>
+                  <input type="number" id="k-komissiya" placeholder="0" oninput="hisoblaNarx()" />
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-ad" style="color:#a855f7"></i> Reklama (so'm)</label>
+                  <input type="number" id="k-reklama" placeholder="0" oninput="hisoblaNarx()" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label><i class="fas fa-percent" style="color:#22c55e"></i> Foyda marjasi (%)</label>
+                <input type="range" id="k-marja" min="5" max="100" value="20" oninput="hisoblaNarx();document.getElementById('k-marja-val').textContent=this.value+'%'" />
+                <span id="k-marja-val" style="font-weight:700;color:#22c55e">20%</span>
+              </div>
+              <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+                <button class="btn btn-primary" style="flex:1" onclick="hisoblaNarx()">
+                  <i class="fas fa-calculator"></i> Hisoblash
+                </button>
+                <button class="btn btn-secondary" onclick="narxUlashish()">
+                  <i class="fab fa-telegram"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3><i class="fas fa-receipt"></i> Hisob natijasi</h3>
+              <div class="kalk-result-grid">
+                <div class="kalk-row"><span>Xitoy narxi:</span><span id="k-xitoy-narx">—</span></div>
+                <div class="kalk-row"><span>Kargo (1 dona):</span><span id="k-kargo-har">—</span></div>
+                <div class="kalk-row highlight"><span>Tannarx:</span><span id="k-tannarx" style="color:#3b82f6;font-weight:700">—</span></div>
+                <div class="kalk-row"><span>Komissiya:</span><span id="k-komissiya-som">—</span></div>
+                <div class="kalk-row"><span>Reklama:</span><span id="k-reklama-som">—</span></div>
+                <div class="kalk-row highlight"><span>Jami xarajat:</span><span id="k-jami-xarajat" style="color:#ef4444;font-weight:700">—</span></div>
+                <div class="kalk-row"><span>Sotuv narxi (hisoblangan):</span><span id="k-sotuv-narx">—</span></div>
+                <div class="kalk-row big"><span>✅ Tavsiya narxi:</span><span id="k-yaxlitlangan" style="color:#6c63ff;font-size:1.3rem;font-weight:800">—</span></div>
+                <div class="kalk-row green"><span>💵 Sof foyda:</span><span id="k-foyda" style="color:#22c55e;font-weight:700">—</span></div>
+                <div class="kalk-row"><span>Foyda foizi:</span><span id="k-foyda-foiz">—</span></div>
+              </div>
+              <div class="profit-bar-wrap">
+                <div class="profit-bar-bg">
+                  <div id="k-profit-bar" style="width:0;height:100%;border-radius:4px;transition:width 0.5s,background 0.3s;background:#22c55e"></div>
+                </div>
+              </div>
+              <input type="hidden" id="k-sotuv-result" />
+              <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="narxMahsulotgaKopir()">
+                <i class="fas fa-copy"></i> Narxni mahsulot formasiga ko'chirish
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- UZUM MARKET FOYDA -->
+        <div id="kalk-uzum-tab" class="kalk-content" style="display:none">
+          <div class="kalk-grid">
+            <div class="card">
+              <h3><i class="fas fa-store"></i> Uzum Market Foyda</h3>
+              <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">Sotuv narxi − Komissiya − Logistika − Reklama − Tannarx = Sof foyda</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>💰 Sotuv narxi (so'm) *</label>
+                  <input type="number" id="u-sotuv-narx" placeholder="0" oninput="hisoblaUzumFoyda()" />
+                </div>
+                <div class="form-group">
+                  <label>🏪 Uzum komissiyasi (%)</label>
+                  <input type="number" id="u-uzum-komissiya" value="15" oninput="hisoblaUzumFoyda()" />
+                  <small style="color:#64748b;font-size:0.75rem">Odatda 10-20%</small>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>🚚 Logistika (so'm)</label>
+                  <input type="number" id="u-logistika" placeholder="0" oninput="hisoblaUzumFoyda()" />
+                </div>
+                <div class="form-group">
+                  <label>📢 Reklama (so'm)</label>
+                  <input type="number" id="u-reklama" placeholder="0" oninput="hisoblaUzumFoyda()" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>🏭 Tannarx (so'm)</label>
+                  <input type="number" id="u-tannarx" placeholder="0" oninput="hisoblaUzumFoyda()" />
+                </div>
+                <div class="form-group">
+                  <label>📦 Miqdor (dona)</label>
+                  <input type="number" id="u-miqdor" value="1" min="1" oninput="hisoblaUzumFoyda()" />
+                </div>
+              </div>
+              <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+                <button class="btn btn-primary" style="flex:1" onclick="hisoblaUzumFoyda()">
+                  <i class="fas fa-calculator"></i> Hisoblash
+                </button>
+                <button class="btn btn-secondary" onclick="uzumNatijaTgYuborish()">
+                  <i class="fab fa-telegram"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3><i class="fas fa-chart-pie"></i> Foyda tahlili</h3>
+              <div class="kalk-result-grid">
+                <div class="kalk-row"><span>Uzum komissiyasi:</span><span id="u-komissiya-som">—</span></div>
+                <div class="kalk-row highlight"><span>Jami xarajat:</span><span id="u-jami-xarajat" style="color:#ef4444;font-weight:700">—</span></div>
+                <div class="kalk-row big"><span>💵 1 ta foyda:</span><span id="u-foyda-1ta" style="font-size:1.3rem;font-weight:800">—</span></div>
+                <div class="kalk-row green"><span>💰 Jami foyda:</span><span id="u-foyda-jami" style="color:#22c55e;font-weight:700">—</span></div>
+                <div class="kalk-row"><span>📈 Foyda foizi:</span><span id="u-foyda-foiz">—</span></div>
+              </div>
+              <div id="u-chart" style="margin-top:1rem"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- XODIMLAR -->
+      <div id="page-xodim" class="page">
+        <div id="rollar-grid" class="rollar-grid" style="margin-bottom:1.5rem"></div>
+        <div class="page-actions">
+          <input type="text" id="xodim-search" placeholder="🔍 Xodim qidirish..." oninput="filterXodimlar()" />
+          <button class="btn btn-primary" onclick="openXodimModal()">
+            <i class="fas fa-plus"></i> Yangi xodim
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Ism</th>
+                <th>Rol</th>
+                <th>Telefon</th>
+                <th>Parol</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="xodim-tbody"></tbody>
+          </table>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <h3><i class="fas fa-info-circle"></i> Kirish yo'riqnomasi</h3>
+          <p style="font-size:0.85rem;color:#64748b;line-height:1.6">
+            Default Admin: <strong>admin / admin123</strong> parol bilan kiradi.<br>
+            Xodimlar faqat o'zlariga ruxsat berilgan bo'limlarni ko'ra oladi.<br>
+            Sidebar da <strong>👤 Profil</strong> tugmasini bosib kirish/chiqish mumkin.
+          </p>
+          <button class="btn btn-primary" style="margin-top:0.75rem" onclick="showLoginScreen()">
+            <i class="fas fa-sign-in-alt"></i> Xodim sifatida kirish
+          </button>
         </div>
       </div>
 
@@ -331,6 +572,9 @@
           <div class="form-group">
             <label>Sotuv narxi (so'm) *</label>
             <input type="number" id="m-sotuv-narx" placeholder="0" />
+            <button class="btn-kalkulator" onclick="openKalkulatorModal()" type="button">
+              <i class="fas fa-calculator"></i> Kalkulyator
+            </button>
           </div>
           <div class="form-group">
             <label>Miqdor (dona) *</label>
@@ -491,6 +735,232 @@
     </div>
   </div>
 
+  <!-- ===== KALKULATOR MODAL ===== -->
+  <div class="modal-bg" id="kalkulator-modal">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <h3><i class="fas fa-calculator" style="color:#6c63ff"></i> Narx Kalkulyatori</h3>
+        <button onclick="closeModal('kalkulator-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Yuan narxi (¥)</label>
+            <input type="number" id="k-yuan" placeholder="0" oninput="hisoblaNarx()" />
+          </div>
+          <div class="form-group">
+            <label>Yuan kursi (so'm)</label>
+            <input type="number" id="k-kurs" value="1820" oninput="hisoblaNarx()" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kargo (jami, so'm)</label>
+            <input type="number" id="k-kargo" placeholder="0" oninput="hisoblaNarx()" />
+          </div>
+          <div class="form-group">
+            <label>Miqdor (dona)</label>
+            <input type="number" id="k-miqdor" value="1" min="1" oninput="hisoblaNarx()" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Komissiya (%)</label>
+            <input type="number" id="k-komissiya" placeholder="0" oninput="hisoblaNarx()" />
+          </div>
+          <div class="form-group">
+            <label>Reklama (so'm)</label>
+            <input type="number" id="k-reklama" placeholder="0" oninput="hisoblaNarx()" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Foyda marjasi: <span id="k-marja-val">20%</span></label>
+          <input type="range" id="k-marja" min="5" max="100" value="20"
+            oninput="hisoblaNarx();document.getElementById('k-marja-val').textContent=this.value+'%'" />
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:1rem;font-size:0.88rem">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem">
+            <span>Tannarx:</span><strong id="k-tannarx">—</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem">
+            <span>Jami xarajat:</span><strong id="k-jami-xarajat" style="color:#ef4444">—</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem">
+            <span>Sof foyda:</span><strong id="k-foyda" style="color:#22c55e">—</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding-top:0.5rem;border-top:1px solid #e2e8f0;font-size:1rem">
+            <span><b>Tavsiya narxi:</b></span>
+            <strong id="k-yaxlitlangan" style="color:#6c63ff;font-size:1.2rem">—</strong>
+          </div>
+          <!-- hidden helpers -->
+          <span id="k-xitoy-narx" style="display:none"></span>
+          <span id="k-kargo-har" style="display:none"></span>
+          <span id="k-komissiya-som" style="display:none"></span>
+          <span id="k-reklama-som" style="display:none"></span>
+          <span id="k-sotuv-narx" style="display:none"></span>
+          <span id="k-foyda-foiz" style="display:none"></span>
+          <div id="k-profit-bar" style="display:none"></div>
+          <input type="hidden" id="k-sotuv-result" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('kalkulator-modal')">Yopish</button>
+        <button class="btn btn-primary" onclick="narxMahsulotgaKopir()">
+          <i class="fas fa-copy"></i> Narxni forma ga ko'chirish
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TREK MODAL ===== -->
+  <div class="modal-bg" id="trek-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-shipping-fast" style="color:#6c63ff"></i> Trek qo'shish</h3>
+        <button onclick="closeModal('trek-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Trek raqami *</label>
+          <input type="text" id="tr-trek" placeholder="masalan: TRK-20240001" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mahsulot (ixtiyoriy)</label>
+            <select id="tr-mahsulot"></select>
+          </div>
+          <div class="form-group">
+            <label>Holat</label>
+            <select id="tr-holat">
+              <option value="kutilmoqda">⏳ Kutilmoqda</option>
+              <option value="yolda">🚢 Yo'lda</option>
+              <option value="bojxona">🏛️ Bojxonada</option>
+              <option value="omborda">📦 Omborda</option>
+              <option value="yetkazildi">✅ Yetkazildi</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Izoh</label>
+          <input type="text" id="tr-izoh" placeholder="Qo'shimcha ma'lumot..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('trek-modal')">Bekor</button>
+        <button class="btn btn-primary" onclick="saveTrek()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== XODIM MODAL ===== -->
+  <div class="modal-bg" id="xodim-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <h3 id="xd-modal-title"><i class="fas fa-user-tie" style="color:#6c63ff"></i> Yangi xodim</h3>
+        <button onclick="closeModal('xodim-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="xd-id" />
+        <div class="form-group">
+          <label>Ism Familiya *</label>
+          <input type="text" id="xd-ism" placeholder="Ali Valiyev" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Rol *</label>
+            <select id="xd-rol">
+              <option value="admin">👑 Admin</option>
+              <option value="menejer">💼 Menejer</option>
+              <option value="omborchi">📦 Omborchi</option>
+              <option value="operator">🖥️ Operator</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="text" id="xd-tel" placeholder="+998 90 123 45 67" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Parol</label>
+          <input type="password" id="xd-parol" placeholder="Kirish paroli" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('xodim-modal')">Bekor</button>
+        <button class="btn btn-primary" onclick="saveXodim()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN MODAL ===== -->
+  <div class="modal-bg" id="login-modal">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-header">
+        <h3>🔐 Tizimga kirish</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Xodimni tanlang</label>
+          <select id="login-xodim-sel"></select>
+        </div>
+        <div class="form-group">
+          <label>Parol</label>
+          <input type="password" id="login-parol" placeholder="Parol kiriting..." onkeydown="if(event.key==='Enter')xodimLogin()" />
+        </div>
+        <p id="login-xato" style="color:#ef4444;font-size:0.85rem;margin-top:0.5rem"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" style="width:100%" onclick="xodimLogin()">
+          <i class="fas fa-sign-in-alt"></i> Kirish
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FIREBASE MODAL ===== -->
+  <div class="modal-bg" id="firebase-modal">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <h3><i class="fas fa-cloud" style="color:#f97316"></i> Firebase Bulut Sozlama</h3>
+        <button onclick="closeModal('firebase-modal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:0.85rem;color:#9a3412">
+          <b>🔥 Firebase ulanishi:</b><br>
+          1. <a href="https://console.firebase.google.com" target="_blank" style="color:#6c63ff">console.firebase.google.com</a> ga kiring<br>
+          2. Yangi loyiha yarating<br>
+          3. Firestore Database yoqing<br>
+          4. Loyiha sozlamalaridan API key va Project ID ni oling
+        </div>
+        <div class="form-group">
+          <label>Firebase Project ID</label>
+          <input type="text" id="fb-project-input" placeholder="masalan: biznesuchun-abc12" />
+        </div>
+        <div class="form-group">
+          <label>API Key</label>
+          <input type="text" id="fb-apikey-input" placeholder="AIzaSy..." />
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem;font-size:0.82rem;color:#15803d;margin-top:0.5rem">
+          <b>UID:</b> <code id="fb-uid-display">Ulanmagan</code>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+          <button class="btn btn-secondary" style="flex:1" onclick="importFromFirebase()">
+            <i class="fas fa-cloud-download-alt"></i> Bulutdan yuklash
+          </button>
+          <button class="btn btn-success" style="flex:1" onclick="exportToFirebase()">
+            <i class="fas fa-cloud-upload-alt"></i> Bulutga saqlash
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('firebase-modal')">Yopish</button>
+        <button class="btn btn-primary" onclick="saveFirebaseConfig()">
+          <i class="fas fa-save"></i> Saqlash & Ulash
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -626,5 +1096,17 @@
   <script src="moliya.js"></script>
   <script src="hisobot.js"></script>
   <script src="scanner.js"></script>
+  <script src="trek.js"></script>
+  <script src="kalkulator.js"></script>
+  <script src="xodim.js"></script>
+  <script src="firebase.js"></script>
+  <script>
+    function switchKalkTab(tab, btn) {
+      document.querySelectorAll('.kalk-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('kalk-narx-tab').style.display = tab === 'narx' ? '' : 'none';
+      document.getElementById('kalk-uzum-tab').style.display = tab === 'uzum' ? '' : 'none';
+    }
+  </script>
 </body>
 </html>

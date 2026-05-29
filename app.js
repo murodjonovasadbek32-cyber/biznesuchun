@@ -128,11 +128,61 @@ const TG = {
   // Kam qolgan mahsulot ogohlantirish
   kamMahsulot(m) {
     this.xabar(
-      `⚠️ <b>Diqqat! Mahsulot Kam Qoldi!</b>\n\n` +
-      `📦 Mahsulot: <b>${m.nom}</b>\n` +
-      `🔢 Qolgan: <b>${m.miqdor} dona</b>\n` +
+      `⚠️ <b>Mahsulot Tugayapti!</b>\n\n` +
+      `📦 Nomi: <b>${m.nom}</b>\n` +
+      `🔢 Qoldiq: <b>${m.miqdor} dona</b>\n` +
       `📉 Minimal: ${m.min || 5} dona\n` +
       `📅 Sana: ${today()}`
+    );
+  },
+
+  // Kunlik hisobot
+  async kunlikHisobot() {
+    const buyurtmalar = DB.get('buyurtmalar');
+    const moliyalar = DB.get('moliyalar');
+    const today_str = today();
+
+    const bugunBuyurtmalar = buyurtmalar.filter(b => b.sana === today_str);
+    const bugunMoliya = moliyalar.filter(m => m.sana === today_str);
+
+    const kirim = bugunMoliya.filter(m => m.tur === 'kirim').reduce((s, m) => s + Number(m.summa), 0);
+    const chiqim = bugunMoliya.filter(m => m.tur === 'chiqim').reduce((s, m) => s + Number(m.summa), 0);
+    const foyda = kirim - chiqim;
+
+    const yetkazildi = bugunBuyurtmalar.filter(b => b.holat === 'yetkazildi').length;
+    const yangi = bugunBuyurtmalar.filter(b => b.holat === 'yangi').length;
+    const jarayonda = bugunBuyurtmalar.filter(b => b.holat === 'jarayonda').length;
+
+    // Kam qolgan mahsulotlar soni
+    const mahsulotlar = DB.get('mahsulotlar');
+    const kamMahsulotlar = mahsulotlar.filter(m => Number(m.miqdor) <= Number(m.min || 5));
+
+    await this.xabar(
+      `📊 <b>Kunlik Hisobot</b>\n` +
+      `📅 ${new Date().toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long', year: 'numeric' })}\n\n` +
+      `🛒 <b>Buyurtmalar:</b> ${bugunBuyurtmalar.length} ta\n` +
+      `  ✅ Yetkazildi: ${yetkazildi}\n` +
+      `  ⏳ Jarayonda: ${jarayonda}\n` +
+      `  🆕 Yangi: ${yangi}\n\n` +
+      `💰 <b>Moliya:</b>\n` +
+      `  📈 Sotuv: ${formatMoney(kirim)}\n` +
+      `  📉 Chiqim: ${formatMoney(chiqim)}\n` +
+      `  💵 Sof foyda: <b>${formatMoney(foyda)}</b>\n` +
+      (kamMahsulotlar.length > 0
+        ? `\n⚠️ <b>Kam qolgan mahsulotlar:</b> ${kamMahsulotlar.length} ta\n` +
+          kamMahsulotlar.slice(0, 3).map(m => `  • ${m.nom}: ${m.miqdor} dona`).join('\n')
+        : `\n✅ Barcha mahsulotlar yetarli`)
+    );
+  },
+
+  // Xush kelibsiz xabari
+  salomlashish() {
+    const vaqt = new Date().getHours();
+    const salom = vaqt < 12 ? 'Xayrli tong' : vaqt < 18 ? 'Xayrli kun' : 'Xayrli kech';
+    this.xabar(
+      `${vaqt < 12 ? '🌅' : vaqt < 18 ? '☀️' : '🌙'} <b>${salom}!</b>\n\n` +
+      `BiznesApp tizimi ishga tushdi.\n` +
+      `📅 ${new Date().toLocaleDateString('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' })}`
     );
   },
 };
@@ -145,6 +195,9 @@ const pageTitles = {
   buyurtma: 'Buyurtmalar',
   moliya: 'Moliya',
   hisobot: 'Hisobotlar',
+  trek: '🚢 Trek Nazorat',
+  kalkulator: '🧮 Kalkulyator',
+  xodim: '👥 Xodimlar Tizimi',
 };
 
 function showPage(name) {
@@ -169,6 +222,9 @@ function showPage(name) {
   if (name === 'buyurtma') renderBuyurtma();
   if (name === 'moliya') renderMoliya();
   if (name === 'hisobot') renderHisobot();
+  if (name === 'trek') { renderTrekStats(); renderTreklar(); }
+  if (name === 'xodim') { renderXodimlar(); renderRollar(); }
+  if (name === 'kalkulator') { hisoblaNarx(); hisoblaUzumFoyda(); }
 }
 
 // ===== SIDEBAR =====
@@ -276,7 +332,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Telegram Chat ID avtomatik olish
   tgChatIdYukla();
+
+  // Kunlik hisobot scheduler (har kuni 21:00 da)
+  startKunlikHisobotScheduler();
 });
+
+// ===== KUNLIK HISOBOT SCHEDULER =====
+function startKunlikHisobotScheduler() {
+  function millisecondsUntil(hour, minute = 0) {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(hour, minute, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+    return target - now;
+  }
+
+  function scheduleHisobot() {
+    const msUntil21 = millisecondsUntil(21, 0);
+    console.log(`⏰ Kunlik hisobot ${Math.round(msUntil21/3600000)} soatdan so'ng yuboriladi`);
+    setTimeout(async () => {
+      await TG.kunlikHisobot();
+      localStorage.setItem('last_hisobot_date', today());
+      // Ertasiga ham rejalashtirish
+      scheduleHisobot();
+    }, msUntil21);
+  }
+
+  // Bugun yuborilmagan bo'lsa, schedulerni ishga tushir
+  const lastDate = localStorage.getItem('last_hisobot_date');
+  if (lastDate !== today()) {
+    scheduleHisobot();
+  } else {
+    // Ertasiga rejalashtir
+    scheduleHisobot();
+  }
+}
+
+// ===== QOLGAN FUNKSIYALAR =====
+// Kunlik hisobotni hozir yuborish (test uchun)
+async function kunlikHisobotYuborish() {
+  await TG.kunlikHisobot();
+  localStorage.setItem('last_hisobot_date', today());
+  showToast('✅ Kunlik hisobot Telegram ga yuborildi!');
+}
 
 // ===== TELEGRAM CHAT ID AVTOMATIK OLISH =====
 async function tgChatIdYukla() {

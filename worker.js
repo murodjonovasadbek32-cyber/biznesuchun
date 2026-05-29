@@ -61,33 +61,43 @@ function rasmYukla(event) {
 
 // ===== NARX HISOBLASH — YUAN → SO'M AVTO (1 yuan = 1820 so'm) =====
 function hisoblaSom() {
-  const yuan = parseFloat(document.getElementById('w-yuan').value) || 0;
-  const kurs = parseFloat(document.getElementById('w-kurs').value) || 1820;
+  const yuan  = parseFloat(document.getElementById('w-yuan').value)       || 0;
+  const kurs  = parseFloat(document.getElementById('w-kurs').value)       || 1820;
+  const kargo = parseFloat(document.getElementById('w-kargo')?.value)     || 0;
+  const kom   = parseFloat(document.getElementById('w-komissiya')?.value) || 0;
+  const rek   = parseFloat(document.getElementById('w-reklama')?.value)   || 0;
+  const qad   = parseFloat(document.getElementById('w-qadoq')?.value)     || 0;
 
   if (yuan > 0 && kurs > 0) {
-    const tannarx = Math.round(yuan * kurs);
+    const yuanSom   = Math.round(yuan * kurs);
+    const tannarx   = yuanSom + kargo + kom + rek + qad;
 
-    // ✅ Sotuv narxiga avtomatik 20% marja qo'shib yozish (foydalanuvchi o'zgartirishi mumkin)
+    // Sotuv narxiga avtomatik 20% marja (foydalanuvchi o'zgartirishi mumkin)
     const sotuvInput = document.getElementById('w-som');
     if (!sotuvInput.value || sotuvInput.dataset.auto === 'true') {
-      const avtoSotuv = Math.round(tannarx * 1.2 / 1000) * 1000; // 20% marja, 1000 ga yaxlitlash
+      const avtoSotuv = Math.round(tannarx * 1.2 / 1000) * 1000;
       sotuvInput.value = avtoSotuv;
       sotuvInput.dataset.auto = 'true';
     }
 
-    const som = parseFloat(document.getElementById('w-som').value) || 0;
+    const som   = parseFloat(document.getElementById('w-som').value) || 0;
     const foyda = som - tannarx;
+    const marja = tannarx > 0 ? ((foyda / tannarx) * 100).toFixed(1) : 0;
 
     const box = document.getElementById('hisob-box');
     box.style.display = 'block';
 
-    document.getElementById('h-yuan').textContent = `¥${yuan.toLocaleString()}`;
-    document.getElementById('h-kurs').textContent = `1¥ = ${kurs.toLocaleString()} so'm`;
-    document.getElementById('h-tannarx').textContent = formatMoney(tannarx);
-    document.getElementById('h-sotuv').textContent = som > 0 ? formatMoney(som) : '—';
-    document.getElementById('h-foyda').textContent = som > 0
-      ? `${formatMoney(foyda)} (${((foyda / tannarx) * 100).toFixed(1)}%)`
-      : '—';
+    document.getElementById('h-yuan').textContent     = `¥${yuan.toLocaleString()}`;
+    document.getElementById('h-kurs').textContent     = `1¥ = ${kurs.toLocaleString()} so'm`;
+    document.getElementById('h-yuan-som').textContent = formatMoney(yuanSom);
+    document.getElementById('h-kargo').textContent    = kargo > 0 ? formatMoney(kargo) : '—';
+    document.getElementById('h-komissiya').textContent= kom   > 0 ? formatMoney(kom)   : '—';
+    document.getElementById('h-reklama').textContent  = rek   > 0 ? formatMoney(rek)   : '—';
+    document.getElementById('h-qadoq').textContent    = qad   > 0 ? formatMoney(qad)   : '—';
+    document.getElementById('h-tannarx').textContent  = formatMoney(tannarx);
+    document.getElementById('h-sotuv').textContent    = som   > 0 ? formatMoney(som)   : '—';
+    document.getElementById('h-foyda').textContent    = som   > 0 ? formatMoney(foyda) : '—';
+    document.getElementById('h-marja').textContent    = som   > 0 ? `${marja}%`        : '—';
   }
 }
 

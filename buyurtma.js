@@ -35,6 +35,9 @@ function renderBuyurtma(filter = '') {
         </td>
         <td>${formatDate(b.sana)}</td>
         <td>
+          <button class="btn btn-sm btn-success" onclick="chekChiqar('${b.id}')" title="Chek chiqarish">
+            <i class="fas fa-receipt"></i>
+          </button>
           <button class="btn btn-sm btn-secondary" onclick="editBuyurtma('${b.id}')">
             <i class="fas fa-edit"></i>
           </button>
@@ -250,3 +253,209 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn = document.querySelector('[onclick="openModal(\'buyurtma-modal\')"]');
   if (btn) btn.setAttribute('onclick', 'openBuyurtmaModal()');
 });
+
+
+// ===== CHEK CHIQARISH =====
+function chekChiqar(id) {
+  const buyurtmalar = DB.get('buyurtmalar');
+  const b = buyurtmalar.find(x => x.id === id);
+  if (!b) return;
+
+  const mijozlar = DB.get('mijozlar');
+  const mijoz = mijozlar.find(m => m.id === b.mijozId) || {};
+
+  const tolovEmoji = { naqd: '💵 Naqd', karta: '💳 Karta', nasiya: '📝 Nasiya', uzum: '📱 Uzum Pay' };
+  const holatEmoji = { yangi: '🆕', jarayonda: '⏳', yetkazildi: '✅', bekor: '❌' };
+
+  const chekOyna = window.open('', '_blank', 'width=400,height=600');
+  chekOyna.document.write(`
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Chek #${b.raqam}</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .chek {
+      background: white;
+      width: 320px;
+      padding: 1.5rem 1.2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      border: 1px solid #e2e8f0;
+    }
+    .chek-top {
+      text-align: center;
+      border-bottom: 2px dashed #e2e8f0;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+    .chek-logo { font-size: 1.8rem; margin-bottom: 4px; }
+    .chek-nom { font-size: 1rem; font-weight: 700; color: #1e293b; }
+    .chek-sub { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+    .chek-raqam {
+      background: #6c63ff;
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-weight: 600;
+    }
+    .chek-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      border-bottom: 1px dotted #f1f5f9;
+    }
+    .chek-row:last-child { border-bottom: none; }
+    .chek-label { color: #64748b; }
+    .chek-val { font-weight: 600; color: #1e293b; text-align: right; }
+    .chek-total {
+      background: #f0fdf4;
+      border: 2px solid #22c55e;
+      border-radius: 8px;
+      padding: 0.75rem;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    .chek-total-label { font-size: 0.8rem; color: #64748b; }
+    .chek-total-sum { font-size: 1.4rem; font-weight: 700; color: #16a34a; }
+    .chek-qr {
+      text-align: center;
+      margin: 1rem 0;
+      padding: 1rem 0;
+      border-top: 2px dashed #e2e8f0;
+    }
+    .chek-qr p { font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; }
+    .chek-bottom {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      border-top: 2px dashed #e2e8f0;
+      padding-top: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .holat-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: ${b.holat === 'yetkazildi' ? '#dcfce7' : b.holat === 'bekor' ? '#fee2e2' : '#dbeafe'};
+      color: ${b.holat === 'yetkazildi' ? '#16a34a' : b.holat === 'bekor' ? '#dc2626' : '#2563eb'};
+    }
+    .print-btn {
+      width: 100%;
+      padding: 0.6rem;
+      background: #6c63ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .chek { box-shadow: none; border: none; }
+      .print-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="chek">
+    <!-- HEADER -->
+    <div class="chek-top">
+      <div class="chek-logo">🛒</div>
+      <div class="chek-nom">Uzum Market Texnika</div>
+      <div class="chek-sub">Rasmiy chek</div>
+      <div class="chek-raqam">Buyurtma #${b.raqam}</div>
+    </div>
+
+    <!-- MIJOZ MA'LUMOTLARI -->
+    <div style="margin-bottom:0.75rem">
+      <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:0.4rem;font-weight:600;text-transform:uppercase">Mijoz</div>
+      <div class="chek-row">
+        <span class="chek-label">Ism:</span>
+        <span class="chek-val">${b.mijozNom || '—'}</span>
+      </div>
+      ${mijoz.tel ? `<div class="chek-row"><span class="chek-label">Telefon:</span><span class="chek-val">${mijoz.tel}</span></div>` : ''}
+    </div>
+
+    <!-- BUYURTMA MA'LUMOTLARI -->
+    <div style="margin-bottom:0.75rem">
+      <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:0.4rem;font-weight:600;text-transform:uppercase">Buyurtma</div>
+      <div class="chek-row">
+        <span class="chek-label">Mahsulot:</span>
+        <span class="chek-val">${b.mahsulotNom || '—'}</span>
+      </div>
+      <div class="chek-row">
+        <span class="chek-label">Miqdor:</span>
+        <span class="chek-val">${b.miqdor} dona</span>
+      </div>
+      <div class="chek-row">
+        <span class="chek-label">To'lov:</span>
+        <span class="chek-val">${tolovEmoji[b.tolov] || b.tolov}</span>
+      </div>
+      <div class="chek-row">
+        <span class="chek-label">Holat:</span>
+        <span class="chek-val"><span class="holat-badge">${holatEmoji[b.holat] || ''} ${b.holat}</span></span>
+      </div>
+      <div class="chek-row">
+        <span class="chek-label">Sana:</span>
+        <span class="chek-val">${b.sana}</span>
+      </div>
+      ${b.izoh ? `<div class="chek-row"><span class="chek-label">Izoh:</span><span class="chek-val">${b.izoh}</span></div>` : ''}
+    </div>
+
+    <!-- JAMI SUMMA -->
+    <div class="chek-total">
+      <div class="chek-total-label">JAMI TO'LOV</div>
+      <div class="chek-total-sum">${Number(b.summa).toLocaleString('uz-UZ')} so'm</div>
+    </div>
+
+    <!-- QR KOD -->
+    <div class="chek-qr">
+      <div id="chek-qr-div"></div>
+      <p>Buyurtma #${b.raqam} tasdiqlash QR kodi</p>
+    </div>
+
+    <!-- PASTKI QISM -->
+    <div class="chek-bottom">
+      <p>Uzum Market Texnika</p>
+      <p>Xaridingiz uchun rahmat! 🙏</p>
+      <p style="margin-top:4px">${new Date().toLocaleString('uz-UZ')}</p>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">
+      🖨️ Chek chiqarish
+    </button>
+  </div>
+
+  <script>
+    new QRCode(document.getElementById('chek-qr-div'), {
+      text: JSON.stringify({ raqam: '${b.raqam}', mijoz: '${b.mijozNom}', summa: ${b.summa}, sana: '${b.sana}' }),
+      width: 100, height: 100,
+      colorDark: '#1e1b4b',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  <\/script>
+</body>
+</html>`);
+
+  chekOyna.document.close();
+}

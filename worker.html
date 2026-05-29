@@ -106,28 +106,76 @@
 
         </div>
 
-        <!-- HISOBLAGICH -->
+        <!-- TO'LIQ NARX KALKULYATORI -->
         <div class="hisob-box" id="hisob-box" style="display:none">
-          <h4><i class="fas fa-calculator"></i> Narx hisob-kitobi</h4>
-          <div class="hisob-row">
-            <span>Yuan narxi:</span>
-            <span id="h-yuan">—</span>
+          <h4><i class="fas fa-calculator"></i> To'liq narx kalkulyatori</h4>
+
+          <!-- Qo'shimcha xarajatlar -->
+          <div class="form-grid" style="margin-bottom:0.75rem">
+            <div class="form-group">
+              <label><i class="fas fa-truck" style="color:#f97316"></i> Kargo (so'm)</label>
+              <input type="number" id="w-kargo" placeholder="0" oninput="hisoblaSom()" />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-percentage" style="color:#6c63ff"></i> Komissiya (so'm)</label>
+              <input type="number" id="w-komissiya" placeholder="0" oninput="hisoblaSom()" />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-ad" style="color:#22c55e"></i> Reklama (so'm)</label>
+              <input type="number" id="w-reklama" placeholder="0" oninput="hisoblaSom()" />
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-box" style="color:#3b82f6"></i> Qadoqlash (so'm)</label>
+              <input type="number" id="w-qadoq" placeholder="0" oninput="hisoblaSom()" />
+            </div>
           </div>
-          <div class="hisob-row">
-            <span>Kurs:</span>
-            <span id="h-kurs">—</span>
-          </div>
-          <div class="hisob-row highlight">
-            <span>Tannarx (so'm):</span>
-            <span id="h-tannarx">—</span>
-          </div>
-          <div class="hisob-row">
-            <span>Sotuv narxi:</span>
-            <span id="h-sotuv">—</span>
-          </div>
-          <div class="hisob-row highlight green">
-            <span>Foyda:</span>
-            <span id="h-foyda">—</span>
+
+          <!-- Hisob natijalari -->
+          <div class="hisob-rows">
+            <div class="hisob-row">
+              <span>💴 Yuan narxi:</span>
+              <span id="h-yuan">—</span>
+            </div>
+            <div class="hisob-row">
+              <span>💱 Kurs:</span>
+              <span id="h-kurs">—</span>
+            </div>
+            <div class="hisob-row">
+              <span>💸 Yuan → So'm:</span>
+              <span id="h-yuan-som">—</span>
+            </div>
+            <div class="hisob-row">
+              <span>🚚 Kargo:</span>
+              <span id="h-kargo">—</span>
+            </div>
+            <div class="hisob-row">
+              <span>📊 Komissiya:</span>
+              <span id="h-komissiya">—</span>
+            </div>
+            <div class="hisob-row">
+              <span>📢 Reklama:</span>
+              <span id="h-reklama">—</span>
+            </div>
+            <div class="hisob-row">
+              <span>📦 Qadoqlash:</span>
+              <span id="h-qadoq">—</span>
+            </div>
+            <div class="hisob-row highlight">
+              <span>🏷 Jami tannarx:</span>
+              <span id="h-tannarx">—</span>
+            </div>
+            <div class="hisob-row">
+              <span>💰 Sotuv narxi:</span>
+              <span id="h-sotuv">—</span>
+            </div>
+            <div class="hisob-row highlight green">
+              <span>📈 Sof foyda:</span>
+              <span id="h-foyda">—</span>
+            </div>
+            <div class="hisob-row highlight green">
+              <span>📊 Marja %:</span>
+              <span id="h-marja">—</span>
+            </div>
           </div>
         </div>
 

@@ -704,3 +704,106 @@ tbody tr:hover { background: #f8fafc; }
   color: white;
   background: rgba(165,180,252,0.15);
 }
+
+
+/* ===== UZUM KALKULYATOR ===== */
+.uzum-kalk-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+@media (max-width: 768px) {
+  .uzum-kalk-wrap { grid-template-columns: 1fr; }
+}
+.uzum-card h3, .uzum-natija h3 {
+  font-size: 0.95rem; font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.uzum-rows {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+}
+.uzum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.uzum-row:last-child { border-bottom: none; }
+.uzum-row.minus { background: #fff8f8; }
+.uzum-row.divider { padding: 2px; background: var(--border); }
+.uzum-row.total {
+  background: #f0fdf4;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.75rem 0.9rem;
+}
+.uzum-row.total-sub {
+  background: #f8fafc;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+.uzum-val { font-weight: 600; }
+.uzum-val.red { color: var(--red); }
+.uzum-val.big { font-size: 1.1rem; }
+.foyda-meter {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.foyda-bar {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.4s ease, background 0.3s;
+}
+.uzum-maslahat {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+  display: none;
+}
+
+/* ===== WORKER KALKULYATOR ROWS ===== */
+.hisob-rows {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  margin-bottom: 0.5rem;
+}
+.hisob-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.hisob-row:last-child { border-bottom: none; }
+.hisob-row.highlight { font-weight: 600; background: #f8fafc; }
+.hisob-row.highlight.green span:last-child { color: var(--green); }
+
+/* ===== HISOBOT TUGMASI ===== */
+.btn-hisobot {
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+.btn-hisobot:hover { background: #0f172a; }
